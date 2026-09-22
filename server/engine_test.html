@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>联机引擎联调</title>
+<style>
+body{font-family:-apple-system,"PingFang SC",sans-serif;margin:0;padding:16px;background:#0d3b2e;color:#fff;font-size:13px}
+h2{margin:0 0 8px;font-size:18px}
+h3{margin:6px 0 4px;font-size:14px;color:#ffd54f}
+.btn{background:#1b5e4f;color:#fff;border:1px solid #2a7d6a;padding:6px 10px;border-radius:4px;cursor:pointer;margin:2px;font-size:12px}
+.btn:hover{background:#2a7d6a}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-red{background:#5a1b1b;border-color:#7a2a2a}
+.btn-red:hover{background:#7a2a2a}
+#top{background:#0a2a22;padding:10px;border-radius:6px;margin-bottom:10px}
+#top input{background:#1b3329;border:1px solid #2a5544;color:#fff;padding:4px;border-radius:3px;width:80px}
+#main{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.client{background:#0a2a22;border:1px solid #1b5544;border-radius:6px;padding:8px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#666;vertical-align:middle;margin-right:4px}
+.dot.on{background:#7CFC9A}
+.dot.off{background:#ff8080}
+pre{background:#02110d;border:1px solid #0a3322;padding:6px;border-radius:4px;font-size:11px;max-height:200px;overflow:auto;white-space:pre-wrap;word-break:break-all;margin:4px 0}
+.row{margin:2px 0}
+.lbl{color:#aaa;display:inline-block;width:80px}
+.seats{display:flex;gap:4px}
+.seat{padding:2px 6px;border-radius:3px;background:#1b3329;font-size:11px}
+.seat.me{background:#5a3b1b;color:#ffd54f}
+.seat.taken{background:#2a4a3a}
+.seat.empty{opacity:.4}
+.log{font-size:11px;color:#aaa;max-height:120px;overflow:auto;background:#02110d;padding:4px;border-radius:3px}
+.log .e{color:#7CFC9A}
+.log .s{color:#9accff}
+.log .x{color:#ff8080}
+</style>
+</head>
+<body>
+<h2>广东麻将 · 联机引擎联调页</h2>
+<div id="top">
+  <div class="row">
+    <span class="lbl">房号:</span><input id="roomId" value="" placeholder="留空自生成">
+    <span class="lbl">底分:</span><input id="baseScore" value="3">
+    <span class="lbl">初始分:</span><input id="initScore" value="1000">
+    <button class="btn" onclick="autoCreate()">1. 创建+4人入座</button>
+    <button class="btn btn-red" onclick="startRound()">2. 房主开局</button>
+    <button class="btn" onclick="autoPlay()">3. 自动出牌（一回合）</button>
+    <button class="btn" onclick="autoFuzz()">4. 跑100局fuzz</button>
+  </div>
+  <div class="row" style="margin-top:6px">
+    <span id="status" style="color:#ffd54f">未连接</span>
+    <button class="btn" onclick="window.open('/online_test','_blank')" style="float:right">连通自检页</button>
+  </div>
+</div>
+
+<div id="main"></div>
+
+<script>
+// ---------- 4 个客户端模拟器 ----------
+function Client(idx){
+  this.idx = idx;
+  this.ws = null;
+  this.sessionId = null;
+  this.seat = -1;
+  this.connected = false;
+  this.state = null;
+  this.logBuf = [];
+}
+Client.prototype.render = function(){
+  var el = document.getElementById('cli'+this.idx);
+  if(!el) return;
+  var st = this.state || {};
+  var phase = st.phase || 'idle';
+  var turn = (st.turn === this.seat) ? ' · 轮到你' : '';
+  var players = (st.players||[]).map(function(p,i){
+    return p ? '<span class="seat '+(i===this.seat?'me':(p.connected===false?'':'taken'))+'">'+i+'.'+(p.name||'?')+'('+(p.handCount||0)+'张'+(p.points!==undefined?','+p.points:'')+')'+'</span>': '';
+  },this).join('');
+  var claimInfo = '';
+  if(st.myClaim){
+    claimInfo = '<div class="row" style="color:#ffd54f">可 claim: '+
+      (st.myClaim.peng?'碰 ':'')+(st.myClaim.kong?('杠('+st.myClaim.kind+') '):'')+
+      (st.myClaim.robKong?'抢杠胡 ':'')+(st.myClaim.hu?'胡 ':'')+'</div>';
+  }
+  if(st.myCanHu) claimInfo += '<div class="row" style="color:#ffd54f">★ 你可自摸胡！</div>';
+  if(st.myKongOptions && st.myKongOptions.length) claimInfo += '<div class="row" style="color:#ffd54f">★ 可自杠: '+st.myKongOptions.map(function(k){return k.kind+':'+k.tile}).join(', ')+'</div>';
+  var end = st.endData ? '<pre style="color:#ffa">endData: '+JSON.stringify(st.endData,null,1).slice(0,400)+'…</pre>' : '';
+  el.innerHTML =
+    '<h3>座位 '+this.idx+' '+(this.seat>=0?'seat='+this.seat:'未入座')+'</h3>'+
+    '<div class="row"><span class="dot '+(this.connected?'on':'off')+'"></span>'+(this.connected?'已连':'未连')+' · phase='+phase+turn+'</div>'+
+    '<div class="row seats">'+players+'</div>'+
+    claimInfo+
+    '<div class="row">' +
+      '<button class="btn" onclick="cliAct('+this.idx+',\'discard\')" '+(phase!=='discard'||turn===''?'disabled':'')+'>出牌</button> '+
+      '<button class="btn btn-red" onclick="cliAct('+this.idx+',\'peng\')">碰</button> '+
+      '<button class="btn btn-red" onclick="cliAct('+this.idx+',\'kong\')">杠</button> '+
+      '<button class="btn btn-red" onclick="cliAct('+this.idx+',\'hu\')">胡</button> '+
+      '<button class="btn btn-red" onclick="cliAct('+this.idx+',\'pass\')">过</button> '+
+      '<button class="btn" onclick="cliAct('+this.idx+',\'next_round\')">下一局</button> '+
+      '<button class="btn" onclick="cliAct('+this.idx+',\'abort\')">中止</button>'+
+    '</div>'+
+    '<pre>state: '+JSON.stringify(st,null,1).slice(0,800)+'</pre>'+
+    end+
+    '<div class="log">'+this.logBuf.slice(-30).join('<br>')+'</div>';
+};
+Client.prototype.log = function(cls,msg){
+  var t = new Date().toLocaleTimeString();
+  this.logBuf.push('<span class="'+cls+'">['+t+'] '+msg+'</span>');
+  this.render();
+};
+Client.prototype.connect = function(){
+  if(this.ws) return;
+  var self = this;
+  this.ws = new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws');
+  this.ws.onopen = function(){
+    self.connected = true;
+    self.log('e','ws open');
+    self.render();
+  };
+  this.ws.onmessage = function(e){
+    var m = JSON.parse(e.data);
+    if(m.type === 'hello'){ self.sessionId = m.sessionId; self.log('e','hello sid='+m.sessionId); }
+    else if(m.type === 'pong'){ self.log('e','pong '+m.t); }
+    else if(m.type === 'error'){ self.log('x','ERR '+m.code+': '+m.msg); }
+    else if(m.type === 'room_created'){ self.seat = m.seat; self.log('e','room_created seat='+m.seat+' id='+m.roomId); }
+    else if(m.type === 'room_joined'){ self.seat = m.seat; self.log('e','room_joined seat='+m.seat+' id='+m.roomId); }
+    else if(m.type === 'state'){ self.state = m.state; self.render(); }
+    else if(m.type === 'event'){
+      var d = m.detail||{};
+      self.log('s','evt#'+m.seq+' '+m.evt+' '+JSON.stringify(d).slice(0,120));
+    }
+  };
+  this.ws.onclose = function(){ self.connected=false; self.log('x','ws closed'); self.render(); };
+};
+Client.prototype.send = function(obj){
+  if(!this.ws || !this.connected) return;
+  this.ws.send(JSON.stringify(obj));
+};
+
+var clients = [new Client(0),new Client(1),new Client(2),new Client(3)];
+
+// 初始化布局
+var main = document.getElementById('main');
+main.innerHTML = clients.map(function(c){
+  return '<div class="client" id="cli'+c.idx+'"><h3>座位 '+c.idx+' (未连接)</h3><button class="btn" onclick="clients['+c.idx+'].connect(); ">连接</button></div>';
+}).join('');
+
+// 顶部按钮
+// 房主创建后把收到的 roomId 写到顶部输入框（render hook）
+Client.prototype._origRender = Client.prototype.render;
+Client.prototype.render = function(){
+  if(this.idx===0 && this.seat===0 && this._lastRoomId){
+    var inp = document.getElementById('roomId');
+    if(!inp.value) inp.value = this._lastRoomId;
+  }
+  this._origRender();
+};
+
+function autoCreate(){
+  var ridInput = document.getElementById('roomId').value.trim();
+  var bs = parseInt(document.getElementById('baseScore').value)||3;
+  var is = parseInt(document.getElementById('initScore').value)||1000;
+  // 先全部连接
+  clients.forEach(function(c){ if(!c.connected) c.connect(); });
+
+  // 房主创建
+  setTimeout(function(){
+    clients[0].send({type:'create_room', roomId:ridInput||undefined, baseScore:bs, initScore:is, name:'甲'});
+  }, 300);
+
+  // 等 seat0 收到 room_created → 用收到的 roomId 让 1/2/3 join
+  // 监听 client0.ws message
+  var orig = clients[0].ws.onmessage;
+  clients[0].ws.addEventListener('message', function once(e){
+    var m = JSON.parse(e.data);
+    if(m.type==='room_created'){
+      clients[0]._lastRoomId = m.roomId;
+      document.getElementById('roomId').value = m.roomId;
+      document.getElementById('status').textContent = '房号 '+m.roomId+'，等 1/2/3 加入…';
+      ['乙','丙','丁'].forEach(function(name,i){
+        setTimeout(function(){
+          clients[i+1].send({type:'join_room', roomId:m.roomId, name:name});
+        }, 200+i*150);
+      });
+      clients[0].ws.removeEventListener('message', once);
+    }
+  });
+}
+function startRound(){
+  clients[0].send({type:'start_round'});
+}
+function cliAct(idx, act){
+  var c = clients[idx];
+  if(act==='peng') c.send({type:'peng'});
+  else if(act==='kong'){
+    var st = c.state||{};
+    if(st.myKongOptions && st.myKongOptions[0]) c.send({type:'kong', kind:st.myKongOptions[0].kind, tile:st.myKongOptions[0].tile});
+    else if(st.myClaim && st.myClaim.kong) c.send({type:'kong', kind:st.myClaim.kind, tile:st.myClaim.tile});
+  }
+  else if(act==='hu') c.send({type:'hu'});
+  else if(act==='pass') c.send({type:'pass'});
+  else if(act==='discard'){
+    var st2 = c.state||{};
+    if(!st2.players || !st2.players[idx]) return;
+    var hand = st2.players[idx].hand||[];
+    if(hand.length===0) return;
+    var lastDraw = st2.players[idx].lastDraw;
+    // 优先出 lastDraw
+    if(lastDraw){ c.send({type:'discard', tile:lastDraw, preIdx:-2}); return; }
+    c.send({type:'discard', tile:hand[0]});
+  }
+  else if(act==='next_round') c.send({type:'next_round'});
+  else if(act==='abort') c.send({type:'abort_round'});
+}
+function autoPlay(){
+  // 自动跑一个回合：当前 turn 的玩家出牌/胡/杠
+  var safety = 0;
+  var timer = setInterval(function(){
+    if(safety++ > 200){ clearInterval(timer); return; }
+    var turn = -1;
+    var phase = '';
+    for(var i=0;i<4;i++){
+      var st = clients[i].state||{};
+      if(st.phase==='discard' && st.turn===i){ turn=i; phase='discard'; break; }
+      if(st.phase==='claim'){
+        // 如果 i 是 claim 候选 → 30% peng
+        var mc = st.myClaim;
+        if(mc){
+          if(Math.random()<0.3 && mc.peng){ cliAct(i,'peng'); }
+          else if(Math.random()<0.1 && mc.kong){ cliAct(i,'kong'); }
+          else if(Math.random()<0.05 && mc.hu){ cliAct(i,'hu'); }
+          else { cliAct(i,'pass'); }
+          return;
+        }
+        if(mc && mc.robKong){ cliAct(i, Math.random()<0.5?'hu':'pass'); return; }
+      }
+    }
+    if(phase==='discard' && turn>=0){
+      var cst = clients[turn].state||{};
+      if(cst.myCanHu){ cliAct(turn,'hu'); return; }
+      if(cst.myKongOptions && cst.myKongOptions.length && Math.random()<0.3){ cliAct(turn,'kong'); return; }
+      cliAct(turn,'discard');
+    } else if(turn<0){
+      // 可能 claim/end，等下一轮
+      var anyActive = clients.some(function(c){ var s=c.state||{}; return s.phase==='discard'||s.phase==='claim'; });
+      if(!anyActive){ clearInterval(timer); document.getElementById('status').textContent='本局结束'; }
+    }
+  }, 300);
+}
+function autoFuzz(){
+  // 跑 100 局：每局开局→自动出牌→结束→下一局
+  var played = 0;
+  function oneRound(){
+    if(played>=100){ document.getElementById('status').textContent='fuzz 完成 100 局'; return; }
+    startRound();
+    var step = 0, safety = 0;
+    var t = setInterval(function(){
+      if(safety++ > 500){ clearInterval(t); played++; setTimeout(oneRound, 200); return; }
+      var turn = -1, phase = '';
+      for(var i=0;i<4;i++){
+        var st = clients[i].state||{};
+        if(st.phase==='discard' && st.turn===i){ turn=i; phase='discard'; break; }
+        if(st.phase==='claim' && st.myClaim){
+          var mc = st.myClaim;
+          if(mc.robKong){ cliAct(i, Math.random()<0.5?'hu':'pass'); }
+          else if(Math.random()<0.3 && mc.peng){ cliAct(i,'peng'); }
+          else if(Math.random()<0.1 && mc.kong){ cliAct(i,'kong'); }
+          else { cliAct(i,'pass'); }
+          return;
+        }
+      }
+      if(phase==='discard' && turn>=0){
+        var cst = clients[turn].state||{};
+        if(cst.myCanHu){ cliAct(turn,'hu'); return; }
+        if(cst.myKongOptions && cst.myKongOptions.length && Math.random()<0.3){ cliAct(turn,'kong'); return; }
+        cliAct(turn,'discard');
+      } else if(turn<0){
+        var anyActive = clients.some(function(c){ var s=c.state||{}; return s.phase==='discard'||s.phase==='claim'; });
+        if(!anyActive){
+          clearInterval(t);
+          played++;
+          document.getElementById('status').textContent='fuzz '+played+'/100';
+          setTimeout(oneRound, 100);
+        }
+      }
+    }, 100);
+  }
+  oneRound();
+}
+
+// 自动连4个 ws（页面加载完自动连）
+window.addEventListener('load', function(){
+  clients.forEach(function(c){ c.connect(); });
+});
+</script>
+</body>
+</html>
