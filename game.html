@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>广东麻将 - 游戏中</title>
+  <link rel="stylesheet" href="css/game.css?v=128">
+</head>
+<body>
+  <!-- 手机竖屏旋转引导层 -->
+  <div class="rotate-overlay" id="rotateOverlay">
+    <div class="rotate-box">
+      <div class="rotate-icon">📱</div>
+      <div class="rotate-text">请旋转手机<br>横屏游玩</div>
+    </div>
+  </div>
+
+  <div class="game-root" id="gameRoot">
+    <!-- 返回首页按钮 -->
+    <button class="back-home-btn" id="btnBackHomeTop" type="button" title="返回首页">
+      <span class="back-arrow">←</span><span>返回</span>
+    </button>
+    <!-- 闪电特效 -->
+    <div class="strike-fx" id="strikeFx" style="display:none;">
+      <img src="images/lightning_bolt.png" class="bolt-img" id="boltImg" alt="">
+    </div>
+    <div class="screen-flash-fx" id="screenFlash" style="display:none;"></div>
+
+    <!-- 编辑模式工具栏 -->
+    <div class="edit-toolbar" id="editToolbar" style="display:none;">
+      <button class="edit-btn edit-zoomout" id="btnZoomOut">缩小</button>
+      <button class="edit-btn edit-zoomin" id="btnZoomIn">放大</button>
+      <button class="edit-btn edit-reset" id="btnResetZoom">还原</button>
+      <button class="edit-btn edit-save" id="btnSaveLayout">保存</button>
+      <button class="edit-btn edit-reset" id="btnResetLayout">重置</button>
+      <button class="edit-btn edit-exit" id="btnExitEdit">退出</button>
+    </div>
+
+    <!-- 对家 (seat 2) - top -->
+    <div class="seat-top draggable" data-layout-key="seatTop">
+      <div class="seat-info">
+        <span class="seat-avatar"><img src="images/fig/photo_a.png" alt=""></span>
+        <span class="seat-name" id="seat2Name">对家</span>
+        <span class="seat-points" id="seat2Points">1000</span>
+        <span class="seat-style" id="seat2Style"></span>
+      </div>
+      <div class="top-main">
+        <div class="seat-hand-h" id="topHand">
+          <!-- 背面牌动态生成 -->
+        </div>
+        <div class="top-melds" id="topMelds" style="display:none;">
+          <!-- 副露动态生成 -->
+        </div>
+      </div>
+      <div class="pond pond-top" id="topPond">
+        <!-- 弃牌动态生成 -->
+      </div>
+    </div>
+
+    <!-- 左家 (seat 3) - left -->
+    <div class="seat-left draggable" data-layout-key="seatLeft">
+      <div class="seat-info">
+        <span class="seat-avatar"><img src="images/fig/photo_b.png" alt=""></span>
+        <span class="seat-name" id="seat3Name">左家</span>
+        <span class="seat-points" id="seat3Points">1000</span>
+        <span class="seat-style" id="seat3Style"></span>
+      </div>
+      <div class="left-melds" id="leftMelds" style="display:none;">
+        <!-- 副露动态生成 -->
+      </div>
+      <div class="left-body">
+        <div class="left-back-col" id="leftHand">
+          <!-- 背面牌动态生成 -->
+        </div>
+        <div class="pond pond-left" id="leftPond">
+          <!-- 弃牌动态生成 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 右家 (seat 1) - right -->
+    <div class="seat-right draggable" data-layout-key="seatRight">
+      <div class="seat-info">
+        <span class="seat-avatar"><img src="images/fig/photo_c.png" alt=""></span>
+        <span class="seat-name" id="seat1Name">右家</span>
+        <span class="seat-points" id="seat1Points">1000</span>
+        <span class="seat-style" id="seat1Style"></span>
+      </div>
+      <div class="right-body">
+        <div class="pond pond-right" id="rightPond">
+          <!-- 弃牌动态生成 -->
+        </div>
+        <div class="right-back-col" id="rightHand">
+          <!-- 背面牌动态生成 -->
+        </div>
+      </div>
+      <div class="right-melds" id="rightMelds" style="display:none;">
+        <!-- 副露动态生成 -->
+      </div>
+    </div>
+
+    <!-- center：东南西北方向 + 鬼牌 + 剩余牌张 -->
+    <div class="center-area draggable" data-layout-key="centerArea">
+      <div class="compass">
+        <div class="dir dir-n">北</div>
+        <div class="dir dir-s">南</div>
+        <div class="dir dir-e">东</div>
+        <div class="dir dir-w">西</div>
+        <div class="compass-core">
+          <div class="ghost-display" id="ghostDisplay" style="display:none;">
+          <div class="ghost-frame">
+            <img id="ghostImg" src="" alt="鬼牌" class="mj ghost-center">
+          </div>
+        </div>
+          <div class="turn-info" id="turnInfo"></div>
+          <div class="deck-info" id="deckInfo">剩 0 张</div>
+        </div>
+      </div>
+      <div class="center-wall"></div>
+    </div>
+
+    <!-- 弃牌区（独立可拖拽） -->
+    <div class="draggable my-pond-wrapper" data-layout-key="myPond">
+      <div class="pond pond-my" id="myPond">
+        <!-- 弃牌动态生成 -->
+      </div>
+    </div>
+
+    <!-- 提示行 -->
+    <div class="tip-line" id="tipLine" style="display:none;">
+      <span class="tip" id="tipText"></span>
+    </div>
+
+    <!-- 碰杠区（独立可拖拽） -->
+    <div class="draggable my-melds-wrapper" data-layout-key="myMelds">
+      <div class="my-melds" id="myMelds" style="display:none;">
+        <!-- 副露动态生成 -->
+      </div>
+    </div>
+
+    <!-- 手牌区（独立可拖拽） -->
+    <div class="draggable my-hand-wrapper" data-layout-key="myHand">
+      <div class="hand" id="myHand">
+        <!-- 手牌动态生成 -->
+      </div>
+    </div>
+
+    <!-- 操作按钮栏（独立可拖拽） -->
+    <div class="action-bar draggable" data-layout-key="actionBar" id="actionBar">
+      <button class="btn hu" id="btnHu" disabled>胡</button>
+      <button class="btn kong" id="btnKong" disabled>杠</button>
+      <button class="btn peng" id="btnPeng" disabled>碰</button>
+      <button class="btn pass" id="btnPass" disabled>过</button>
+      <button class="btn play" id="btnPlay" disabled>打出</button>
+    </div>
+
+    <!-- 结算弹窗 -->
+    <div class="modal-mask" id="endModal" style="display:none;">
+      <div class="modal end-modal">
+        <div class="m-title" id="endTitle">胡牌</div>
+        <div class="m-fan" id="endFan" style="display:none;"></div>
+        <div class="m-paytext" id="endPayText" style="display:none;"></div>
+        <!-- 4 家结算表 -->
+        <div class="m-table" id="endTable">
+          <!-- JS 动态生成 -->
+        </div>
+        <div class="m-btns">
+          <button class="btn btn-primary" id="btnNextRound">下一局</button>
+          <button class="btn btn-secondary" id="btnBackHome">返回首页</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 局数显示 -->
+    <div class="round-info draggable" data-layout-key="roundInfo" id="roundInfo">第 1 局</div>
+    <!-- roundInfo 不需要 drag-handle -->
+
+    <!-- 编辑布局按钮 -->
+    <button class="edit-layout-btn" id="btnEditLayout" title="编辑布局">
+      <span class="edit-icon">⚙</span>
+    </button>
+  </div>
+
+  <script src="js/mahjong.js?v=38"></script>
+  <script src="js/sounds.js?v=33"></script>
+  <script src="js/game.js?v=97"></script>
+</body>
+</html>
