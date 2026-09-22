@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: guangdong-mahjong
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_VERSION
+        value: "18"
