@@ -1239,7 +1239,12 @@
     onCreateRoom: function () {
       var nick = (document.getElementById('nickInput').value || '').trim();
       online._nickName = nick;
-      net.send('create_room', { name: nick });
+      // 读取主页设置的底分和初始分（localStorage），传给服务器
+      var baseScore = parseInt(localStorage.getItem('baseScore'));
+      if (!(baseScore >= 1 && baseScore <= 10)) baseScore = 3;
+      var initScore = parseInt(localStorage.getItem('initScore'));
+      if (![50,100,200,300,400,500,600,700,800,900,1000].includes(initScore)) initScore = 1000;
+      net.send('create_room', { name: nick, baseScore: baseScore, initScore: initScore });
       ui.setLobbyStatus('正在创建房间…');
     },
 
