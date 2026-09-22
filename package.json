@@ -2,7 +2,7 @@
   "name": "guangdong-mahjong-online",
   "version": "0.1.0",
   "private": true,
-  "description": "广东麻将联机版",
+  "description": "广东麻将（鬼牌/自摸/包牌）联机版 - 网页静态托管 + WebSocket 裁判服务器",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js"
