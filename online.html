@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>广东麻将 · 联机对战</title>
+  <link rel="stylesheet" href="css/game.css?v=128">
+  <link rel="stylesheet" href="css/online.css?v=11">
+</head>
+<body>
+
+  <!-- 闪电特效 -->
+  <div class="strike-fx" id="strikeFx" style="display:none;">
+    <img src="images/lightning_bolt.png" class="bolt-img" id="boltImg" alt="">
+  </div>
+  <div class="screen-flash-fx" id="screenFlash" style="display:none;"></div>
+
+  <!-- ============ Lobby 区（入房前显示） ============ -->
+  <div class="lobby-root" id="lobby">
+    <div class="lobby-card">
+      <h1 class="lobby-title">广东麻将 · 联机</h1>
+
+      <div class="lobby-row">
+        <label class="lobby-label">你的昵称</label>
+        <input type="text" id="nickInput" class="lobby-input" maxlength="6" placeholder="甲/乙/丙/丁…">
+      </div>
+
+      <div class="lobby-section">
+        <button class="lobby-btn primary" id="btnCreateRoom" disabled>创建房间</button>
+        <div class="lobby-hint">系统生成 6 位房号，发给朋友加入</div>
+      </div>
+
+      <div class="lobby-divider">或</div>
+
+      <div class="lobby-section">
+        <input type="text" id="joinRoomId" class="lobby-input room-id" maxlength="6" placeholder="输入 6 位房号">
+        <button class="lobby-btn primary" id="btnJoinRoom" disabled>加入房间</button>
+      </div>
+
+      <div class="lobby-status" id="lobbyStatus">正在连接服务器…</div>
+    </div>
+
+    <!-- 房内大厅：4 座位卡 + 房主操作 -->
+    <div class="room-card" id="roomCard" style="display:none;">
+      <div class="room-header">
+        <span class="room-id">房号：<b id="displayRoomId">------</b></span>
+        <span class="room-status-text" id="roomStatusText">等待玩家加入…</span>
+        <button class="lobby-btn small" id="btnLeaveRoom">退出房间</button>
+      </div>
+      <div class="seats-grid" id="seatsGrid">
+        <!-- 4 座位卡动态生成 -->
+      </div>
+      <div class="room-actions">
+        <button class="lobby-btn primary" id="btnStartRound" disabled>房主开局</button>
+        <button class="lobby-btn danger" id="btnAbortRound" style="display:none;">中止本局</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 桌面区（开局后显示） ============ -->
+  <div class="game-root" id="gameRoot" style="display:none;">
+    <!-- 返回首页按钮 -->
+    <button class="back-home-btn" id="btnBackHomeTop" type="button" title="返回首页">
+      <span class="back-arrow">←</span><span>返回</span>
+    </button>
+
+    <!-- 房号/座位显示 -->
+    <div class="online-room-bar" id="onlineRoomBar">
+      房号 <b id="barRoomId">------</b> · 你是 <b id="barMySeat">?</b>
+    </div>
+
+    <!-- 对家 (seat 2) - top -->
+    <div class="seat-top">
+      <div class="seat-info">
+        <span class="seat-name" id="seat2Name">对家</span>
+        <span class="auto-tag" id="seat2Auto" style="display:none;">托管中</span>
+        <span class="seat-points" id="seat2Points">1000</span>
+      </div>
+      <div class="top-main">
+        <div class="seat-hand-h" id="topHand"></div>
+        <div class="top-melds" id="topMelds" style="display:none;"></div>
+      </div>
+      <div class="pond pond-top" id="topPond"></div>
+    </div>
+
+    <!-- 左家 (seat 3) - left -->
+    <div class="seat-left">
+      <div class="seat-info">
+        <span class="seat-name" id="seat3Name">左家</span>
+        <span class="auto-tag" id="seat3Auto" style="display:none;">托管中</span>
+        <span class="seat-points" id="seat3Points">1000</span>
+      </div>
+      <div class="left-melds" id="leftMelds" style="display:none;"></div>
+      <div class="left-body">
+        <div class="left-back-col" id="leftHand"></div>
+        <div class="pond pond-left" id="leftPond"></div>
+      </div>
+    </div>
+
+    <!-- 右家 (seat 1) - right -->
+    <div class="seat-right">
+      <div class="seat-info">
+        <span class="seat-name" id="seat1Name">右家</span>
+        <span class="auto-tag" id="seat1Auto" style="display:none;">托管中</span>
+        <span class="seat-points" id="seat1Points">1000</span>
+      </div>
+      <div class="right-body">
+        <div class="pond pond-right" id="rightPond"></div>
+        <div class="right-back-col" id="rightHand"></div>
+      </div>
+      <div class="right-melds" id="rightMelds" style="display:none;"></div>
+    </div>
+
+    <!-- 中心：方向 + 鬼牌 + 剩余张数 -->
+    <div class="center-area">
+      <div class="compass">
+        <div class="dir dir-n">北</div>
+        <div class="dir dir-s">南</div>
+        <div class="dir dir-e">东</div>
+        <div class="dir dir-w">西</div>
+        <div class="compass-core">
+          <div class="ghost-display" id="ghostDisplay" style="display:none;">
+            <div class="ghost-frame">
+              <img id="ghostImg" src="" alt="鬼牌" class="mj ghost-center">
+            </div>
+          </div>
+          <div class="turn-info" id="turnInfo"></div>
+          <div class="deck-info" id="deckInfo">剩 0 张</div>
+        </div>
+      </div>
+      <div class="center-wall"></div>
+    </div>
+
+    <!-- 自己弃牌区 -->
+    <div class="my-pond-wrapper">
+      <div class="pond pond-my" id="myPond"></div>
+    </div>
+
+    <!-- 提示行 -->
+    <div class="tip-line" id="tipLine" style="display:none;">
+      <span class="tip" id="tipText"></span>
+    </div>
+
+    <!-- 自己副露区 -->
+    <div class="my-melds-wrapper">
+      <div class="my-melds" id="myMelds" style="display:none;"></div>
+    </div>
+
+    <!-- 自己手牌区 -->
+    <div class="my-hand-wrapper">
+      <div class="hand" id="myHand"></div>
+    </div>
+
+    <!-- 出牌倒计时条（阶段D步骤3） -->
+    <div class="turn-timer" id="turnTimer" style="display:none;">
+      <div class="turn-timer-track">
+        <div class="turn-timer-bar" id="turnTimerBar"></div>
+      </div>
+      <div class="turn-timer-text" id="turnTimerText"></div>
+    </div>
+
+    <!-- 操作按钮栏 -->
+    <div class="action-bar" id="actionBar">
+      <button class="btn hu" id="btnHu" disabled>胡</button>
+      <button class="btn kong" id="btnKong" disabled>杠</button>
+      <button class="btn peng" id="btnPeng" disabled>碰</button>
+      <button class="btn pass" id="btnPass" disabled>过</button>
+      <button class="btn play" id="btnPlay" disabled>打出</button>
+    </div>
+
+    <!-- 结算弹窗 -->
+    <div class="modal-mask" id="endModal" style="display:none;">
+      <div class="modal end-modal">
+        <div class="m-title" id="endTitle">胡牌</div>
+        <div class="m-fan" id="endFan" style="display:none;"></div>
+        <div class="m-paytext" id="endPayText" style="display:none;"></div>
+        <div class="m-table" id="endTable"></div>
+        <div class="m-btns">
+          <button class="btn btn-primary" id="btnNextRound">下一局</button>
+          <button class="btn btn-secondary" id="btnBackHome">返回首页</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 局数显示 -->
+    <div class="round-info" id="roundInfo">第 1 局</div>
+  </div>
+
+  <!-- ============ 顶部 toast 提示 ============ -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ============ 断线提示 ============ -->
+  <div class="disconnect-mask" id="disconnectMask" style="display:none;">
+    <div class="disconnect-box">
+      <div class="disconnect-icon">⚠</div>
+      <div class="disconnect-text" id="disconnectText">网络断开，3 秒后重连…</div>
+    </div>
+  </div>
+
+  <script src="js/mahjong.js?v=38"></script>
+  <script src="js/sounds.js?v=33"></script>
+  <script src="js/online.js?v=18"></script>
+</body>
+</html>
