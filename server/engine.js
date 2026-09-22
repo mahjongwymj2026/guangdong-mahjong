@@ -445,9 +445,13 @@ MahjongEngine.prototype.snapshot = function (viewerSeat) {
   if (viewerSeat < 0 || this.ended) return snap;
 
   // discard 阶段且轮到自己：算可胡/可杠
+  // 只有刚摸过牌（lastDraw 存在）才能自摸胡；碰之后 lastDraw 为 null，必须出牌不能胡
+  // 杠之后会补牌（lastDraw 存在），杠爆自摸胡允许
   if (this.phase === 'discard' && this.turn === viewerSeat) {
     var evalHand = this.evalHandFor(viewerSeat);
-    snap.myCanHu = mj.checkWin(evalHand, this.ghost, this.players[viewerSeat].melds);
+    if (this.players[viewerSeat].lastDraw) {
+      snap.myCanHu = mj.checkWin(evalHand, this.ghost, this.players[viewerSeat].melds);
+    }
     snap.myKongOptions = this.selfKongsFor(viewerSeat);
   }
 
