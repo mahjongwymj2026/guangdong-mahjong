@@ -1,0 +1,10 @@
+const fs=require('fs');
+global.window={snd:{hu(){}}, localStorage:{getItem(){return null;},setItem(){}}};
+global.document=new Proxy({}, {get(){return function(){return {style:{}, classList:{add(){},remove(){}}};}}});
+eval(fs.readFileSync('D:/TRAE/WYMJ/js/mahjong.js','utf8'));
+const mj=window.mj;
+const evalHand=['W1','W2','W3','W4','W5','W6','W7','W8','W9','D5','D5'];
+console.log('C isDanDiao:', mj.isDanDiao(evalHand, [{type:'peng',tiles:['Z1','Z1','Z1']}], null, 'D5'));
+console.log('C checkWin:', mj.checkWin(evalHand, null, [{type:'peng',tiles:['Z1','Z1','Z1']}]));
+console.log('C pre sorted trySetsOne via isDanDiao ghost null:');
+console.log('  bestFanEx:', mj.bestFanEx ? mj.bestFanEx(evalHand,[{type:'peng',tiles:['Z1','Z1','Z1']}],null,true,false) : 'n/a');
