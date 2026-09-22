@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>test peng hu</title></head><body>
+<script src="js/mahjong.js"></script>
+<script>
+  // 模拟：碰完1万后，手牌11张 + 1万碰副露
+  // 你说鬼牌是1万，那碰的1万里也有鬼牌？不对，碰的是别人打的牌
+  // 假设手牌11张 + 1副露(万1x3)，鬼=万1
+  // 一个可能的组合：手牌 万1(鬼)x2 + 筒2筒3筒4 + 筒5筒6筒7 + 条2条3 + 条5
+  var hand = ['W1','W1','D2','D3','D4','D5','D6','D7','T2','T3','T5'];
+  var melds = [{type:'peng', tile:'W1', tiles:['W1','W1','W1'], from:1}];
+  var ghost = 'W1';
+  document.write('<p>碰万1后，手牌=' + hand.length + '张 + 1副露(万1x3) = 共' + (hand.length + 3) + '张</p>');
+  document.write('<p>鬼=' + ghost + '</p>');
+  document.write('<p>checkWin(手牌, 鬼, 副露): ' + window.mj.checkWin(hand, ghost, melds) + '</p>');
+  document.write('<p>手牌: ' + hand.join(',') + '</p>');
+</script>
+</body></html>
