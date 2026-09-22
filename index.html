@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>广东麻将 - 开始游戏</title>
+  <link rel="stylesheet" href="css/index.css?v=3">
+</head>
+<body>
+  <div class="index-root">
+    <!-- 背景遮罩 -->
+    <div class="bg-mask"></div>
+
+    <!-- 装饰性麻将牌 -->
+    <div class="decor-tiles">
+      <img src="images/dong.png" class="decor-tile dt1" alt="东">
+      <img src="images/zhong.png" class="decor-tile dt2" alt="中">
+      <img src="images/fa.png" class="decor-tile dt3" alt="发">
+      <img src="images/bai.png" class="decor-tile dt4" alt="白">
+    </div>
+
+    <div class="home-scroll">
+      <div class="title-area">
+        <h1 class="game-title">广东麻将</h1>
+        <p class="game-subtitle">自摸 · 鬼牌 · 包牌</p>
+      </div>
+
+      <div class="setting-card">
+        <!-- 底分 -->
+        <div class="opt-area">
+          <p class="opt-label">底分选择</p>
+          <div class="opt-btns" id="baseBtns">
+            <button class="opt-btn" data-group="base" data-value="1">1分</button>
+            <button class="opt-btn" data-group="base" data-value="2">2分</button>
+            <button class="opt-btn active" data-group="base" data-value="3">3分</button>
+            <button class="opt-btn" data-group="base" data-value="4">4分</button>
+            <button class="opt-btn" data-group="base" data-value="5">5分</button>
+            <button class="opt-btn" data-group="base" data-value="6">6分</button>
+            <button class="opt-btn" data-group="base" data-value="7">7分</button>
+            <button class="opt-btn" data-group="base" data-value="8">8分</button>
+            <button class="opt-btn" data-group="base" data-value="9">9分</button>
+            <button class="opt-btn" data-group="base" data-value="10">10分</button>
+          </div>
+        </div>
+
+        <!-- 初始分数 -->
+        <div class="opt-area">
+          <p class="opt-label">游戏内分数（四家开局各带）</p>
+          <div class="opt-btns" id="initBtns">
+            <button class="opt-btn" data-group="init" data-value="50">50</button>
+            <button class="opt-btn" data-group="init" data-value="100">100</button>
+            <button class="opt-btn" data-group="init" data-value="200">200</button>
+            <button class="opt-btn" data-group="init" data-value="300">300</button>
+            <button class="opt-btn" data-group="init" data-value="400">400</button>
+            <button class="opt-btn" data-group="init" data-value="500">500</button>
+            <button class="opt-btn" data-group="init" data-value="600">600</button>
+            <button class="opt-btn" data-group="init" data-value="700">700</button>
+            <button class="opt-btn" data-group="init" data-value="800">800</button>
+            <button class="opt-btn" data-group="init" data-value="900">900</button>
+            <button class="opt-btn active" data-group="init" data-value="1000">1000</button>
+          </div>
+        </div>
+
+        <!-- 出牌速度 -->
+        <div class="opt-area">
+          <p class="opt-label">出牌速度</p>
+          <div class="opt-btns" id="speedBtns">
+            <button class="opt-btn" data-group="speed" data-value="1">慢</button>
+            <button class="opt-btn active" data-group="speed" data-value="2">一般</button>
+            <button class="opt-btn" data-group="speed" data-value="3">正常</button>
+            <button class="opt-btn" data-group="speed" data-value="4">快</button>
+            <button class="opt-btn" data-group="speed" data-value="5">超快</button>
+          </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="home-actions">
+          <button class="start-btn" id="startBtn">开始游戏</button>
+          <button class="start-btn online-btn" id="onlineBtn" type="button">联机对战</button>
+          <button class="detail-btn" id="detailBtn" type="button">详细介绍</button>
+        </div>
+      </div>
+
+      <div class="footer-info">
+        <p>三人AI对战 · 六种性格随机分配</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 详细介绍弹窗 -->
+  <div class="detail-mask" id="detailMask">
+    <div class="detail-modal">
+      <div class="detail-head">
+        <h2>详细介绍</h2>
+        <button class="detail-close" id="detailClose" type="button">×</button>
+      </div>
+      <div class="detail-body">
+        <!-- 一、规则简介 -->
+        <section class="detail-section">
+          <h3>一、规则简介</h3>
+          <ul class="dlist">
+            <li>自摸胡牌，三家分付；尖牌、放杠杠爆一家全包。</li>
+            <li>鬼牌（百搭）万能，可代替任何牌组成胡牌；鬼牌不能碰、不能杠。</li>
+            <li>尖牌包胡：被碰或明杠后单吊自摸，由碰杠提供者包付。</li>
+            <li>杠爆：杠牌后补摸的牌自摸胡牌；明杠杠爆由放杠者包付。</li>
+            <li>抢杠胡：别人补公杠时可以抢胡，由补杠者全包。</li>
+            <li>不设七对子，可胡十三幺。</li>
+          </ul>
+        </section>
+
+        <!-- 二、详细分值计算 -->
+        <section class="detail-section">
+          <h3>二、详细分值计算</h3>
+          <p class="score-tip">下表按当前选择的<strong id="tipBase">3</strong>分底分自动计算：胡牌总得分 = 番数 × 底分；自摸时三家平分，尖牌、放杠杠爆时由一家付总得分。</p>
+
+          <p class="table-cap">胡牌番型得分（分值可在主界面选择，得分自动计算）</p>
+          <table class="score-table">
+            <thead>
+              <tr><th>番型</th><th>番数</th><th>自摸每家付</th><th>总得分</th></tr>
+            </thead>
+            <tbody id="fanTableBody">
+            </tbody>
+          </table>
+
+          <p class="table-cap">杠牌得分</p>
+          <table class="score-table">
+            <thead>
+              <tr><th>杠法</th><th>得分方式</th><th>每次得分</th></tr>
+            </thead>
+            <tbody id="gangTableBody">
+            </tbody>
+          </table>
+
+          <ul class="dlist">
+            <li>尖牌（碰杠后剩一张牌单吊）：自摸后放最后一碰杠者包胡牌分，杠分照常各算各的。</li>
+            <li>抢杠胡：补杠者包付全部胡牌分，本次杠分不算。</li>
+            <li>杠爆明杠：放杠者包付胡牌分加杠分；杠上杠还要包付整串杠分。</li>
+            <li>荒庄（没人胡）：所有分数不计，包括杠分。</li>
+          </ul>
+        </section>
+
+        <!-- 三、AI性格介绍 -->
+        <section class="detail-section">
+          <h3>三、AI 性格介绍</h3>
+          <p class="score-tip">每局开始，系统会从下面六种性格中随机分配三种给三家电脑，牌局中各家名字旁边会显示本局性格。</p>
+          <ul class="dlist ai-list">
+            <li><span class="ai-name">保守型</span>少碰少杠，小番不胡、要够番才胡，防守最稳。</li>
+            <li><span class="ai-name">普通型</span>中规中矩，碰杠胡都看情况，攻守均衡。</li>
+            <li><span class="ai-name">激进型</span>爱碰爱杠，有胡就胡，攻势最猛。</li>
+            <li><span class="ai-name">贪番型</span>一心做大牌，偏爱留字牌和幺九牌，宁可多等也不小胡。</li>
+            <li><span class="ai-name">速攻型</span>不做字牌，尽快听牌胡牌，小胡快跑。</li>
+            <li><span class="ai-name">鬼牌型</span>围绕鬼牌做牌，碰杠意愿一般，善用百搭。</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/mahjong.js"></script>
+  <script src="js/sounds.js"></script>
+  <script src="js/index.js?v=4"></script>
+</body>
+</html>
