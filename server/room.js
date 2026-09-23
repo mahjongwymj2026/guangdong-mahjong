@@ -54,10 +54,28 @@ Room.prototype.seatOf = function (sessionId) {
   return -1;
 };
 
+// 找下一个房主：只找真人（非机器人），没有真人返回 null
+// 返回 null 时，下一个进房的真人会通过 _takeOverOwnerIfInvalid 自动成为房主
+// excludeSessionId：要排除的 session（比如正在离开的房主），避免选到自己
+Room.prototype._findNextOwner = function (excludeSessionId) {
+  for (var i = 0; i < 4; i++) {
+    var s = this.seats[i];
+    if (s && !s.isBot && s.sessionId !== excludeSessionId) return s.sessionId;
+  }
+  return null;
+};
+
 Room.prototype.playerCount = function () {
   var n = 0;
   for (var i = 0; i < 4; i++) if (this.seats[i]) n++;
   return n;
+};
+
+// 如果当前房主无效（null / 机器人 / 已断开），由 sessionId 接管房主
+Room.prototype._takeOverOwnerIfInvalid = function (sessionId) {
+  var oSeat = this.ownerSessionId ? this.seatOf(this.ownerSessionId) : -1;
+  var ownerValid = oSeat >= 0 && this.seats[oSeat] && !this.seats[oSeat].isBot && this.seats[oSeat].connected;
+  if (!ownerValid) this.ownerSessionId = sessionId;
 };
 
 Room.prototype.isConnected = function (seat) {
@@ -184,11 +202,8 @@ Room.prototype._doLeave = function (sessionId) {
   // 先清这个座位的 timer（防止孤立定时器触发到 null seat 上）
   this._clearAutoTimerForSeat(seat);
   if (this.ownerSessionId === sessionId) {
-    // 房主转让给第一个非空座位
-    this.ownerSessionId = null;
-    for (var i = 0; i < 4; i++) {
-      if (this.seats[i]) { this.ownerSessionId = this.seats[i].sessionId; break; }
-    }
+    // 房主转让：优先真人，没有真人则第一个非空座位，都没有则 null
+    this.ownerSessionId = this._findNextOwner(sessionId);
   }
   // 游戏进行中 → 恢复成 bot 让 AI 自动接管（engine 按 seat index 存状态，直接复用）
   if (this.status === 'playing') {
@@ -557,6 +572,7 @@ Room.prototype.attachWs = function (sessionId, ws, name) {
     var s = this.seats[seat];
     s.ws = ws; s.connected = true; s.lastSeen = Date.now();
     if (name) s.name = name;
+    this._takeOverOwnerIfInvalid(sessionId); // 重连回来若房主无效则接管
     this.broadcastRoomUpdate();
     return seat;
   }
@@ -567,7 +583,7 @@ Room.prototype.attachWs = function (sessionId, ws, name) {
         sessionId: sessionId, ws: ws, name: name || ('玩家' + (i + 1)),
         connected: true, lastSeen: Date.now()
       };
-      if (this.ownerSessionId === null) this.ownerSessionId = sessionId;
+      this._takeOverOwnerIfInvalid(sessionId); // 房主无效则新房客接管
       this.broadcastRoomUpdate();
       // 如果新玩家是当前 turn 或 claim 候选人，arm 真人 timer（Advisor: null-seat 路径也要 arm timer）
       this._rearmForSeat(i);
@@ -587,6 +603,7 @@ Room.prototype.attachWs = function (sessionId, ws, name) {
         sessionId: sessionId, ws: ws, name: name || ('玩家' + (j + 1)),
         connected: true, lastSeen: Date.now()
       };
+      this._takeOverOwnerIfInvalid(sessionId); // 房主无效则新房客接管
       this.broadcastRoomUpdate();  // 自带 broadcastState，所有人（含新玩家）拿到最新状态
       // 如果新玩家是当前 turn 或 claim 候选人，arm 真人 timer（复用 _rearmForSeat）
       this._rearmForSeat(j);
@@ -601,6 +618,10 @@ Room.prototype.markDisconnected = function (sessionId) {
   var seat = this.seatOf(sessionId);
   if (seat < 0) return;
   this.seats[seat].connected = false;
+  // 房主断开 → 转让给下一个真人（关页面/退出即视为让出房主）
+  if (this.ownerSessionId === sessionId) {
+    this.ownerSessionId = this._findNextOwner(sessionId);
+  }
   this.broadcastRoomUpdate();
 };
 
