@@ -359,7 +359,14 @@
 }
 /* 新摸的牌：与手牌隔开一段距离 */
 .hand-tile.last-draw { margin-left: 2.6vh; }
-/* 选中态：伪元素绝对定位做红框，完全不碰牌图本身的布局/图层，杜绝漂移 */
+/* 选中态：transform 放大不占布局空间，牌堆不会被挤动、不漂移 */
+.hand-tile.selected {
+  transform: scale(1.18);
+  transform-origin: bottom center;
+  z-index: 10;
+  transition: transform 0.12s ease;
+}
+/* 选中红框：伪元素绝对定位，不碰牌图本身的布局/图层 */
 .hand-tile.selected::after {
   content: '';
   position: absolute;

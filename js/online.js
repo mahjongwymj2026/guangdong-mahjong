@@ -528,10 +528,14 @@
             if (window.snd.tile) window.snd.tile(detail.tile);
             break;
           case 'peng':
-            if (window.snd.peng) window.snd.peng();
+            // 先读被碰的牌，再喊"碰"（出牌先、碰后；延迟 350ms 让牌名先播完）
+            if (detail.tile && window.snd.tile) window.snd.tile(detail.tile);
+            if (window.snd.peng) setTimeout(function () { window.snd.peng(); }, 350);
             break;
           case 'kong':
-            if (window.snd.gang) window.snd.gang();
+            // 先读被杠的牌，再喊"杠"（出牌先、杠后；延迟 350ms 让牌名先播完）
+            if (detail.tile && window.snd.tile) window.snd.tile(detail.tile);
+            if (window.snd.gang) setTimeout(function () { window.snd.gang(); }, 350);
             break;
           case 'hu':
             if (detail.isSelfDraw && window.snd.zimo) window.snd.zimo();
