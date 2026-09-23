@@ -352,16 +352,19 @@
 }
 #myHand .mj-own { cursor: pointer; }
 .hand-tile { position: relative; }
-#myHand .mj-own:hover { transform: translateY(-1.5vh); }
+/* 仅鼠标设备才有 hover 上抬效果，触屏设备不触发以免点歪 */
+@media (hover: hover) {
+  #myHand .mj-own:hover { transform: translateY(-1.5vh); }
+}
 /* 新摸的牌：与手牌隔开一段距离 */
 .hand-tile.last-draw { margin-left: 2.6vh; }
 /* 选中光圈改为红色，直接作用在牌图本体，牌动光圈即动 */
 .hand-tile.selected .mj {
-  transform: translateY(-3.3vh);
   outline: 3px solid #ff4455;
   outline-offset: 2px;
   border-radius: 0.8vh;
   box-shadow: 0 0 1.4vh rgba(255,60,68,0.85);
+  filter: brightness(1.18);
 }
 
 /* —— 鬼牌特效：金色渐变圈 + 右上角红圈「鬼」字 —— */
