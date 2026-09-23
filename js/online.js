@@ -445,6 +445,10 @@
         if (p2 && p2.lastDraw === snap.ghost && oldLastDraw !== snap.ghost) {
           fxLightning = true;
         }
+        // 自己摸牌：lastDraw 变化时清除旧选中态，避免红框框在旧位置/未加载图上
+        if (p2 && p2.lastDraw && oldLastDraw !== p2.lastDraw) {
+          online.selectedIdx = null;
+        }
       }
       return { lightning: fxLightning };
     },

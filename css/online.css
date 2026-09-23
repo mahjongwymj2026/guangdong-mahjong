@@ -418,8 +418,6 @@
   /* 自己手牌放大（vw 相对屏宽，横屏时屏宽大） */
   .mj-own { height: 6.5vw; }
   .hand-tile.last-draw { margin-left: 1.8vw; }
-  .hand-tile.selected .mj { filter: brightness(1.18); }
-  .hand-tile.selected .mj-own { filter: brightness(1.18); }
 
   /* 自己弃牌区放大放宽 */
   #myPond img { height: 5vw; }
