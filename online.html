@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>广东麻将 · 联机对战</title>
   <link rel="stylesheet" href="css/game.css?v=128">
-  <link rel="stylesheet" href="css/online.css?v=11">
+  <link rel="stylesheet" href="css/online.css?v=12">
 </head>
 <body>
 
@@ -17,6 +17,15 @@
 
   <!-- ============ Lobby 区（入房前显示） ============ -->
   <div class="lobby-root" id="lobby">
+    <!-- 顶部条：左侧返回首页 | 右侧房卡倒计时（有卡才显示） -->
+    <div class="lobby-top-bar">
+      <button class="back-home-btn mini" id="btnLobbyBackHome" type="button">← 返回首页</button>
+      <div class="card-countdown" id="cardCountdown" style="display:none;">
+        <span class="cd-label">房主卡到期</span>
+        <span class="cd-time" id="cdTime">--:--:--</span>
+      </div>
+    </div>
+
     <div class="lobby-card">
       <h1 class="lobby-title">广东麻将 · 联机</h1>
 
@@ -25,13 +34,45 @@
         <input type="text" id="nickInput" class="lobby-input" maxlength="6" placeholder="甲/乙/丙/丁…">
       </div>
 
-      <div class="lobby-section">
-        <button class="lobby-btn primary" id="btnCreateRoom" disabled>创建房间</button>
-        <div class="lobby-hint">系统生成 6 位房号，发给朋友加入</div>
+      <!-- 底分下拉 -->
+      <div class="lobby-row">
+        <label class="lobby-label">底  分</label>
+        <select class="lobby-select" id="baseSelect">
+          <option value="1">1 分</option>
+          <option value="5">5 分</option>
+          <option value="10" selected>10 分（推荐）</option>
+          <option value="20">20 分</option>
+          <option value="50">50 分</option>
+          <option value="100">100 分</option>
+        </select>
       </div>
 
-      <div class="lobby-divider">或</div>
+      <!-- 游戏总分值下拉 -->
+      <div class="lobby-row">
+        <label class="lobby-label">游戏总分值</label>
+        <select class="lobby-select" id="totalSelect">
+          <option value="50">50 分</option>
+          <option value="100">100 分</option>
+          <option value="200" selected>200 分（推荐）</option>
+          <option value="300">300 分</option>
+          <option value="500">500 分</option>
+          <option value="800">800 分</option>
+          <option value="1000">1000 分</option>
+        </select>
+      </div>
 
+      <!-- 创建房间：必须输房主卡密码 -->
+      <div class="lobby-section">
+        <label class="lobby-label">创建房间（需房主卡密码）</label>
+        <input type="text" id="pwdInput" class="lobby-input" maxlength="32" placeholder="输入房主卡密码">
+        <button class="lobby-btn primary" id="btnCreateRoom" disabled>创建房间</button>
+        <div class="lobby-hint" id="createHint">系统生成 6 位房号 · 底分 <b id="showBase">10</b> · 总分 <b id="showTotal">200</b></div>
+      </div>
+
+      <!-- 红色大字提示（替代原来的"或"分隔） -->
+      <div class="lobby-landscape-tip">请打开手机横屏游戏</div>
+
+      <!-- 输入房号加入（永远不需要密码） -->
       <div class="lobby-section">
         <input type="text" id="joinRoomId" class="lobby-input room-id" maxlength="6" placeholder="输入 6 位房号">
         <button class="lobby-btn primary" id="btnJoinRoom" disabled>加入房间</button>
@@ -63,6 +104,12 @@
     <button class="back-home-btn" id="btnBackHomeTop" type="button" title="返回首页">
       <span class="back-arrow">←</span><span>返回</span>
     </button>
+
+    <!-- 游戏内右上角：房主卡倒计时（有卡才显示） -->
+    <div class="card-countdown game" id="gameCardCountdown" style="display:none;">
+      <span class="cd-label">房主卡到期</span>
+      <span class="cd-time" id="gameCdTime">--:--:--</span>
+    </div>
 
     <!-- 房号/座位显示 -->
     <div class="online-room-bar" id="onlineRoomBar">
@@ -199,6 +246,6 @@
 
   <script src="js/mahjong.js?v=38"></script>
   <script src="js/sounds.js?v=33"></script>
-  <script src="js/online.js?v=19"></script>
+  <script src="js/online.js?v=20"></script>
 </body>
 </html>

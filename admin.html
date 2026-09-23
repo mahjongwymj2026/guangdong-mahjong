@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>广东麻将 · 房主卡管理后台</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #0d3b2e, #0a2920);
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 960px; margin: 0 auto; }
+    h1 {
+      text-align: center;
+      color: #ffd54f;
+      font-size: 22px;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    /* ---------- 登录页 ---------- */
+    .login-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh;
+    }
+    .login-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,213,79,0.25);
+      border-radius: 12px;
+      padding: 40px 30px;
+      width: 320px;
+    }
+    .login-card h2 {
+      text-align: center;
+      color: #ffd54f;
+      margin-bottom: 24px;
+      font-size: 18px;
+    }
+    .login-card label {
+      display: block;
+      font-size: 13px;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+    .login-card input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #2a5a3a;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.3);
+      color: #ffe082;
+      font-size: 15px;
+      margin-bottom: 16px;
+      outline: none;
+    }
+    .login-card input:focus { border-color: #ffd54f; }
+    .login-card button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #ffe082, #ffd54f);
+      color: #3d1f00;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .login-card button:active { transform: scale(0.98); }
+    .login-card .err {
+      color: #ef9a9a;
+      font-size: 13px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    /* ---------- 管理页 ---------- */
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,213,79,0.25);
+    }
+    .admin-header h2 { color: #ffd54f; font-size: 18px; }
+    .btn-logout {
+      padding: 6px 14px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      background: transparent;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.1); }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid rgba(255,213,79,0.4);
+      border-radius: 6px;
+      background: rgba(255,213,79,0.1);
+      color: #ffe082;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.15s;
+    }
+    .btn:hover { background: rgba(255,213,79,0.2); }
+    .btn.danger {
+      border-color: rgba(244,67,54,0.5);
+      background: rgba(244,67,54,0.1);
+      color: #ffcdd2;
+    }
+    .btn.danger:hover { background: rgba(244,67,54,0.2); }
+    .btn.generate {
+      border-color: rgba(76,175,80,0.5);
+      background: rgba(76,175,80,0.15);
+      color: #a5d6a7;
+    }
+    .btn.generate:hover { background: rgba(76,175,80,0.25); }
+    .btn.small { padding: 4px 10px; font-size: 12px; }
+
+    .section {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #ffd54f;
+      border-bottom: 1px solid rgba(255,213,79,0.2);
+    }
+    .section-body { padding: 8px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    th {
+      background: rgba(255,213,79,0.08);
+      color: #ffd54f;
+      font-weight: normal;
+      font-size: 12px;
+    }
+    td code {
+      background: rgba(0,0,0,0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: #ffe082;
+      font-family: monospace;
+      font-size: 13px;
+      cursor: pointer;
+      user-select: all;
+    }
+    td code:active { background: rgba(255,213,79,0.3); }
+
+    .empty {
+      text-align: center;
+      padding: 24px;
+      color: #666;
+      font-size: 13px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+      padding: 12px 16px;
+      background: rgba(255,213,79,0.05);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .stat-item { font-size: 14px; }
+    .stat-num {
+      font-size: 22px;
+      font-weight: bold;
+      color: #ffd54f;
+      margin-right: 6px;
+    }
+    .stat-num.danger { color: #ff8a80; }
+  </style>
+</head>
+<body>
+  <div class="container" id="app"></div>
+
+  <script>
+    const API = '/api/admin';
+    const LS_KEY = 'mj_admin_token';
+
+    function getToken() { return localStorage.getItem(LS_KEY); }
+    function setToken(t) { localStorage.setItem(LS_KEY, t); }
+    function clearToken() { localStorage.removeItem(LS_KEY); }
+
+    function $render() { document.getElementById('app').innerHTML = $html(); $bind(); }
+
+    // ---------- 登录 ----------
+    function $html() {
+      if (!getToken()) return `
+        <h1>广东麻将 · 房主卡管理</h1>
+        <div class="login-wrap">
+          <div class="login-card">
+            <h2>管理员登录</h2>
+            <label>账号</label>
+            <input type="text" id="loginUser" placeholder="admin">
+            <label>密码</label>
+            <input type="password" id="loginPass" placeholder="password">
+            <button id="btnLogin">登 录</button>
+            <div class="err" id="loginErr"></div>
+          </div>
+        </div>`;
+      return $adminHtml();
+    }
+
+    function $adminHtml() {
+      const token = getToken();
+      return `
+        <div class="admin-header">
+          <h2>房主卡管理后台</h2>
+          <button class="btn-logout" id="btnLogout">退出登录</button>
+        </div>
+        <div class="stats" id="statsBox">
+          <div class="stat-item"><span class="stat-num" id="cntAvail">0</span>可用密码</div>
+          <div class="stat-item"><span class="stat-num danger" id="cntUsed">0</span>已使用</div>
+        </div>
+        <div class="toolbar">
+          <button class="btn generate" id="btnGen10">生成 10 条</button>
+          <button class="btn generate" id="btnGen50">生成 50 条</button>
+          <button class="btn" id="btnRefresh">刷新</button>
+          <button class="btn danger" id="btnClear">清空全部（谨慎）</button>
+        </div>
+        <div class="section">
+          <div class="section-title">📋 当前可用密码（点击密码可复制）</div>
+          <div class="section-body" id="availTableBox"><div class="empty">加载中…</div></div>
+        </div>
+        <div class="section">
+          <div class="section-title">📋 已使用过（自动倒计时 6h 过期）</div>
+          <div class="section-body" id="usedTableBox"><div class="empty">加载中…</div></div>
+        </div>`;
+    }
+
+    function $bind() {
+      // 登录页
+      const btnLogin = document.getElementById('btnLogin');
+      if (btnLogin) {
+        btnLogin.onclick = login;
+        document.getElementById('loginPass').addEventListener('keydown', e => {
+          if (e.key === 'Enter') login();
+        });
+      }
+      // 管理页
+      const btnLogout = document.getElementById('btnLogout');
+      if (btnLogout) btnLogout.onclick = () => { clearToken(); $render(); };
+      const btnGen10 = document.getElementById('btnGen10');
+      if (btnGen10) btnGen10.onclick = () => generate(10);
+      const btnGen50 = document.getElementById('btnGen50');
+      if (btnGen50) btnGen50.onclick = () => generate(50);
+      const btnRefresh = document.getElementById('btnRefresh');
+      if (btnRefresh) btnRefresh.onclick = loadState;
+      const btnClear = document.getElementById('btnClear');
+      if (btnClear) btnClear.onclick = () => {
+        if (!confirm('确定清空全部可用密码？已使用过的不受影响。')) return;
+        apiFetch(`${API}/passwords/clear`, { method: 'POST' }).then(loadState);
+      };
+      // 点击密码复制
+      document.querySelectorAll('td code').forEach(el => {
+        el.onclick = () => {
+          navigator.clipboard && navigator.clipboard.writeText(el.textContent);
+          el.style.background = 'rgba(255,213,79,0.4)';
+          setTimeout(() => el.style.background = '', 600);
+        };
+      });
+    }
+
+    // ---------- API ----------
+    async function apiFetch(url, opts = {}) {
+      opts.headers = opts.headers || {};
+      const token = getToken();
+      if (token) opts.headers['X-Admin-Token'] = token;
+      if (opts.body && typeof opts.body === 'object') {
+        opts.headers['Content-Type'] = 'application/json';
+        opts.body = JSON.stringify(opts.body);
+      }
+      const res = await fetch(url, opts);
+      if (res.status === 401) {
+        clearToken();
+        $render();
+        return null;
+      }
+      return res.json();
+    }
+
+    async function login() {
+      const u = document.getElementById('loginUser').value.trim();
+      const p = document.getElementById('loginPass').value.trim();
+      const err = document.getElementById('loginErr');
+      err.textContent = '';
+      if (!u || !p) { err.textContent = '请输入账号和密码'; return; }
+      const r = await fetch(`${API}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p })
+      });
+      const d = await r.json();
+      if (d.ok && d.token) {
+        setToken(d.token);
+        $render();
+        loadState();
+      } else {
+        err.textContent = d.err || '登录失败';
+      }
+    }
+
+    async function generate(n) {
+      const r = await apiFetch(`${API}/passwords/generate`, {
+        method: 'POST', body: { count: n }
+      });
+      if (r && r.ok) {
+        alert(`✅ 生成了 ${r.generated} 条新密码！\n\n` + r.passwords.join('\n'));
+        loadState();
+      }
+    }
+
+    async function loadState() {
+      const r = await apiFetch(`${API}/passwords/list`);
+      if (!r || !r.ok) return;
+      const s = r.state;
+      // 统计
+      document.getElementById('cntAvail').textContent = s.availableCount;
+      document.getElementById('cntUsed').textContent = s.usedCount;
+      // 可用密码表
+      const availBox = document.getElementById('availTableBox');
+      if (!s.available.length) {
+        availBox.innerHTML = '<div class="empty">暂无可用密码，点上方"生成"按钮创建</div>';
+      } else {
+        availBox.innerHTML = `<table><thead><tr>
+          <th>#</th><th>密码（点击复制）</th><th>创建时间</th>
+          <th>操作</th></tr></thead><tbody>` +
+          s.available.map((p, i) => `<tr>
+            <td>${i + 1}</td>
+            <td><code>${p.pwd}</code></td>
+            <td>${p.createdAtStr}</td>
+            <td><button class="btn small danger" data-revoke="${p.pwd}">撤销</button></td>
+          </tr>`).join('') + '</tbody></table>';
+        availBox.querySelectorAll('[data-revoke]').forEach(b => {
+          b.onclick = async () => {
+            const pwd = b.dataset.revoke;
+            if (!confirm(`确定撤销密码 ${pwd} 吗？撤销后放回可用池。`)) return;
+            await apiFetch(`${API}/passwords/revoke`, {
+              method: 'POST', body: { password: pwd }
+            });
+            loadState();
+          };
+        });
+      }
+      // 已用密码表
+      const usedBox = document.getElementById('usedTableBox');
+      if (!s.used.length) {
+        usedBox.innerHTML = '<div class="empty">还没有人用过密码</div>';
+      } else {
+        usedBox.innerHTML = `<table><thead><tr>
+          <th>#</th><th>密码</th><th>房号</th><th>首次使用</th>
+          <th>过期时间</th><th>剩余</th></tr></thead><tbody>` +
+          s.used.map((u, i) => `<tr>
+            <td>${i + 1}</td>
+            <td><code>${u.pwd}</code></td>
+            <td>${u.roomId || '-'}</td>
+            <td>${u.firstUsedAtStr}</td>
+            <td>${u.expiresAtStr}</td>
+            <td>${fmtRemain(u.remainSec)}</td>
+          </tr>`).join('') + '</tbody></table>';
+      }
+    }
+
+    function fmtRemain(sec) {
+      if (sec <= 0) return '<span style="color:#ef9a9a">已过期</span>';
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      let t = '';
+      if (h > 0) t += h + 'h ';
+      t += m + 'm ' + s + 's';
+      return h === 0 && m < 30 ? `<span style="color:#ff8a80">${t}</span>` : t;
+    }
+
+    // 启动
+    $render();
+    if (getToken()) loadState();
+  </script>
+</body>
+</html>

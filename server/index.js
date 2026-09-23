@@ -12,12 +12,17 @@ var { WebSocketServer } = require('ws');
 var P = require('./protocol.js');
 var C = P.C, S = P.S, ERR = P.ERR;
 var { RoomManager } = require('./room.js');
+var hp = require('./host_passwords.js');
+var adminRouter = require('./admin.js');
 
 var PORT = process.env.PORT || 8080;   // 本机开发用 8080；Render 会注入 PORT
 var ROOT = path.join(__dirname, '..');
 
 var app = express();
 app.use(express.static(ROOT));
+app.use(express.json());  // admin 路由需要解析 JSON body
+app.use('/api/admin', adminRouter);  // 管理员 API
+app.get('/admin', function(req, res) { res.sendFile(path.join(ROOT, 'admin.html')); });
 
 // 阶段A临时连通自检页（保留不动）
 app.get('/online_test', function(req, res) {
@@ -102,12 +107,27 @@ wss.on('connection', function(ws) {
 
     // 房间生命周期消息
     if (t === C.CREATE_ROOM) {
+      var pwd = v.value.password;
+      // 密码校验
+      if (!hp.isAvailable(pwd)) {
+        ws.send(JSON.stringify({ type: S.ERROR, code: ERR.ROOM_PWD_INVALID, msg: '房主卡密码无效或已使用' }));
+        return;
+      }
       var r = roomMgr.createRoom(sid, ws, {
         roomId: v.value.roomId, baseScore: v.value.baseScore,
         initScore: v.value.initScore, name: v.value.name
       });
-      if (r.ok) ws.send(JSON.stringify({ type: S.ROOM_CREATED, roomId: r.roomId, seat: r.seat }));
-      else ws.send(JSON.stringify({ type: S.ERROR, code: r.code, msg: r.msg }));
+      if (r.ok) {
+        // 标记密码已用，拿 cardExpiry（6 小时过期时间戳）
+        var mark = hp.markUsed(pwd, r.roomId);
+        var cardExpiry = mark.ok ? mark.cardExpiry : 0;
+        // 更新 Room 的 cardExpiry
+        var room = roomMgr.getRoomOf(sid);
+        if (room && cardExpiry) room.cardExpiry = cardExpiry;
+        ws.send(JSON.stringify({ type: S.ROOM_CREATED, roomId: r.roomId, seat: r.seat, cardExpiry: cardExpiry }));
+      } else {
+        ws.send(JSON.stringify({ type: S.ERROR, code: r.code, msg: r.msg }));
+      }
       return;
     }
     if (t === C.JOIN_ROOM) {

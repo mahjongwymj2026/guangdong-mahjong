@@ -10,7 +10,7 @@ var ai = require('./ai.js');
 var mj = require('../js/mahjong.js');
 
 // ---------- Room ----------
-function Room(roomId, baseScore, initScore) {
+function Room(roomId, baseScore, initScore, cardExpiry) {
   this.roomId = roomId;
   this.baseScore = baseScore || 3;
   this.initScore = initScore || 1000;
@@ -20,6 +20,7 @@ function Room(roomId, baseScore, initScore) {
   this.status = 'waiting';                // waiting | playing
   this.lastActivity = Date.now();
   this.eventSeq = 0;                       // 单调递增事件序号
+  this.cardExpiry = cardExpiry || 0;       // 房主卡过期时间戳（0=无卡）
 
   // claim 等待状态（非持久化，只在 phase='claim' 时存在）
   this._passingSeats = {};                 // seat -> true（已 pass）
@@ -93,6 +94,7 @@ Room.prototype.broadcastState = function () {
     snap.claimDeadline = this.deadlines.claim;
     snap.takenOver = this.takenOver.slice();
     snap.timeoutCounts = this.timeoutCounts.slice();
+    snap.cardExpiry = this.cardExpiry;  // 房主卡过期时间戳，所有客户端用来做倒计时
     var msg = { type: S.STATE, seq: this.eventSeq, state: snap };
     try { s.ws.send(JSON.stringify(msg)); } catch (e) {}
   }
@@ -797,7 +799,7 @@ RoomManager.prototype.createRoom = function (sessionId, ws, opts) {
   var roomId = opts.roomId && !this.rooms.has(opts.roomId) ? opts.roomId : this._genRoomId();
   if (this.rooms.has(roomId)) return { ok: false, code: ERR.ROOM_ID_TAKEN, msg: '房间号已存在' };
 
-  var room = new Room(roomId, opts.baseScore, opts.initScore);
+  var room = new Room(roomId, opts.baseScore, opts.initScore, opts.cardExpiry || 0);
   this.rooms.set(roomId, room);
   var seat = room.attachWs(sessionId, ws, opts.name);
   this.sessionRoom.set(sessionId, { room: room, seat: seat });

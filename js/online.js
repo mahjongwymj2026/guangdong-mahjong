@@ -64,6 +64,54 @@
       var el = document.getElementById('lobbyStatus');
       if (el) el.textContent = msg || '';
     },
+    // 房主卡倒计时：服务器给一个过期时间戳（ms），客户端每秒刷新显示
+    _cdInterval: null,
+    updateCardCountdown: function (expiryTs) {
+      // 清旧定时器
+      if (ui._cdInterval) { clearInterval(ui._cdInterval); ui._cdInterval = null; }
+      var cdLobby = document.getElementById('cardCountdown');
+      var cdGame = document.getElementById('gameCardCountdown');
+      if (!expiryTs || expiryTs <= Date.now()) {
+        // 过期了或没卡 → 隐藏
+        if (cdLobby) cdLobby.style.display = 'none';
+        if (cdGame) cdGame.style.display = 'none';
+        return;
+      }
+      var tick = function () {
+        var remain = Math.max(0, expiryTs - Date.now());
+        var sec = Math.floor(remain / 1000);
+        var h = Math.floor(sec / 3600);
+        var m = Math.floor((sec % 3600) / 60);
+        var s = sec % 60;
+        var text = (h > 0 ? (h + ':') : '') +
+                   (m < 10 && h > 0 ? '0' : '') + m + ':' +
+                   (s < 10 ? '0' : '') + s;
+        // 更新 DOM
+        var lobbyTime = document.getElementById('cdTime');
+        var gameTime = document.getElementById('gameCdTime');
+        if (lobbyTime) lobbyTime.textContent = text;
+        if (gameTime) gameTime.textContent = text;
+        // 剩不到 30 分钟 → 加 expiring 类变红闪烁
+        var expiring = remain < 30 * 60 * 1000;
+        if (cdLobby) {
+          cdLobby.style.display = 'flex';
+          cdLobby.classList.toggle('expiring', expiring);
+        }
+        if (cdGame) {
+          cdGame.style.display = 'flex';
+          cdGame.classList.toggle('expiring', expiring);
+        }
+        // 过期 → 停
+        if (remain <= 0) {
+          clearInterval(ui._cdInterval);
+          ui._cdInterval = null;
+          if (cdLobby) cdLobby.style.display = 'none';
+          if (cdGame) cdGame.style.display = 'none';
+        }
+      };
+      tick();
+      ui._cdInterval = setInterval(tick, 1000);
+    },
     // 阶段D步骤3：托管事件提示
     onAutoAction: function (d) {
       d = d || {};
@@ -205,11 +253,10 @@
       switch (m.type) {
         case 'hello':
           online.sessionId = m.sessionId;
-          // 启用 lobby 按钮
-          var btnCreate = document.getElementById('btnCreateRoom');
+          // 启用 lobby 按钮：btnJoin 只要 nick 填了就能用；btnCreate 要 nick + pwd 都填了才启用
           var btnJoin = document.getElementById('btnJoinRoom');
-          if (btnCreate) btnCreate.disabled = false;
           if (btnJoin) btnJoin.disabled = false;
+          // btnCreate 的启用交给 initDomSetup 里的 nickInput + pwdInput 的 input 事件来控制
           // 阶段D 步骤1：尝试用 localStorage 里的旧 session 恢复房间
           try {
             var saved = localStorage.getItem('mj_online_session');
@@ -231,6 +278,9 @@
         case 'room_joined':
           online.roomId = m.roomId;
           online.mySeat = m.seat;
+          // 房主卡倒计时：创建房时服务器回 cardExpiry；加房时从后续 state 快照里拿
+          if (m.cardExpiry) online._cardExpiry = m.cardExpiry;
+          ui.updateCardCountdown(online._cardExpiry || 0);
           // 显示房号
           var ridEl = document.getElementById('displayRoomId');
           if (ridEl) ridEl.textContent = m.roomId;
@@ -299,6 +349,11 @@
         case 'state':
           var fxRes = state.apply(m.state);
           render.all();
+          // 房主卡倒计时：每个 state 快照都带权威时间戳，所有玩家同步
+          if (m.state && m.state.cardExpiry) {
+            online._cardExpiry = m.state.cardExpiry;
+            ui.updateCardCountdown(m.state.cardExpiry);
+          }
           // 画面已更新为最新快照，此时再播放事件声音，声画基本同步
           if (online._pendingSfx) {
             var pend = online._pendingSfx;
@@ -336,7 +391,11 @@
       'room.notIn': '你不在房间',
       'room.idTaken': '房号已存在',
       'session.invalid': '会话已失效，无法恢复',
-      'seat.takenOver': '本局电脑托管中，下一局恢复'
+      'seat.takenOver': '本局电脑托管中，下一局恢复',
+      // 房主卡密码
+      'room.pwd.missing': '请输入房主卡密码',
+      'room.pwd.invalid': '房主卡密码无效或已使用',
+      'room.pwd.used': '房主卡已失效，请联系房主获取新卡'
     };
     return map[code];
   }
@@ -1264,13 +1323,13 @@
 
     onCreateRoom: function () {
       var nick = (document.getElementById('nickInput').value || '').trim();
+      var pwd = (document.getElementById('pwdInput').value || '').trim();
+      if (!pwd) { ui.toast('请先输入房主卡密码', 'error'); return; }
       online._nickName = nick;
-      // 读取主页设置的底分和初始分（localStorage），传给服务器
-      var baseScore = parseInt(localStorage.getItem('baseScore'));
-      if (!(baseScore >= 1 && baseScore <= 10)) baseScore = 3;
-      var initScore = parseInt(localStorage.getItem('initScore'));
-      if (![50,100,200,300,400,500,600,700,800,900,1000].includes(initScore)) initScore = 1000;
-      net.send('create_room', { name: nick, baseScore: baseScore, initScore: initScore });
+      // 从大厅下拉框取底分和总分值（不再读 localStorage）
+      var baseScore = parseInt(document.getElementById('baseSelect').value) || 10;
+      var initScore = parseInt(document.getElementById('totalSelect').value) || 200;
+      net.send('create_room', { name: nick, baseScore: baseScore, initScore: initScore, password: pwd });
       ui.setLobbyStatus('正在创建房间…');
     },
 
@@ -1354,8 +1413,12 @@
     var btnNextRound = document.getElementById('btnNextRound');
     var btnBackHome = document.getElementById('btnBackHome');
     var btnBackHomeTop = document.getElementById('btnBackHomeTop');
+    var btnLobbyBackHome = document.getElementById('btnLobbyBackHome');
     var nickInput = document.getElementById('nickInput');
     var joinInput = document.getElementById('joinRoomId');
+    var pwdInput = document.getElementById('pwdInput');
+    var baseSelect = document.getElementById('baseSelect');
+    var totalSelect = document.getElementById('totalSelect');
 
     if (btnCreate) btnCreate.addEventListener('click', action.onCreateRoom);
     if (btnJoin) btnJoin.addEventListener('click', action.onJoinRoom);
@@ -1370,6 +1433,7 @@
     if (btnNextRound) btnNextRound.addEventListener('click', action.onNextRound);
     if (btnBackHome) btnBackHome.addEventListener('click', action.onBackHome);
     if (btnBackHomeTop) btnBackHomeTop.addEventListener('click', action.onBackHome);
+    if (btnLobbyBackHome) btnLobbyBackHome.addEventListener('click', action.onBackHome);
 
     // 输入框 Enter 触发对应按钮
     if (nickInput) nickInput.addEventListener('keydown', function (e) {
@@ -1378,6 +1442,29 @@
     if (joinInput) joinInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); if (btnJoin) btnJoin.click(); }
     });
+    if (pwdInput) pwdInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); if (btnCreate && !btnCreate.disabled) btnCreate.click(); }
+    });
+
+    // btnCreate 启用逻辑：nick + pwd 都填了才启用
+    function checkCreateEnabled() {
+      if (!btnCreate) return;
+      var hasNick = nickInput && nickInput.value.trim().length > 0;
+      var hasPwd = pwdInput && pwdInput.value.trim().length > 0;
+      btnCreate.disabled = !(hasNick && hasPwd);
+    }
+    if (nickInput) nickInput.addEventListener('input', checkCreateEnabled);
+    if (pwdInput) pwdInput.addEventListener('input', checkCreateEnabled);
+
+    // 下拉框 change → 同步 createHint 里的底分/总分显示
+    function refreshCreateHint() {
+      var sb = document.getElementById('showBase');
+      var st = document.getElementById('showTotal');
+      if (sb) sb.textContent = baseSelect ? baseSelect.value : '10';
+      if (st) st.textContent = totalSelect ? totalSelect.value : '200';
+    }
+    if (baseSelect) baseSelect.addEventListener('change', refreshCreateHint);
+    if (totalSelect) totalSelect.addEventListener('change', refreshCreateHint);
   }
 
   // ============ 启动 ============

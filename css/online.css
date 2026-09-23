@@ -530,3 +530,105 @@
   .end-modal .m-btns { margin-top: 6vh; }
   .end-modal .m-btns .btn { font-size: 7.8vh; padding: 2.4vh 5.4vh; border-radius: 1.8vh; }
 }
+
+/* ========================================================
+   房主卡 / 底分 / 大厅新 UI（2026-09-23 新增）
+   ======================================================== */
+
+/* 大厅顶部条：左侧返回首页 | 右侧倒计时 */
+.lobby-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px 2px 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 迷你返回首页按钮（大厅里用） */
+.back-home-btn.mini {
+  position: static;
+  font-size: 12px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 213, 79, 0.3);
+  border-radius: 6px;
+  color: #ffd54f;
+  cursor: pointer;
+}
+.back-home-btn.mini:active { background: rgba(255, 213, 79, 0.2); }
+
+/* 大厅下拉框（底分 / 总分值） */
+.lobby-select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #2a5a3a;
+  background: rgba(0, 0, 0, 0.35);
+  color: #ffe082;
+  font-size: 15px;
+  outline: none;
+  cursor: pointer;
+  margin-top: 6px;
+  box-sizing: border-box;
+}
+.lobby-select:focus { border-color: #ffd54f; }
+.lobby-select option { background: #1a2e1c; color: #ffe082; }
+
+/* 红色大字横屏提示 */
+.lobby-landscape-tip {
+  text-align: center;
+  font-size: 24px;
+  color: #ff4444;
+  background: rgba(255, 68, 68, 0.12);
+  border: 1.5px solid rgba(255, 68, 68, 0.45);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 14px 0 4px 0;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
+  line-height: 1.1;
+}
+
+/* 房主卡倒计时条（大厅顶部条里用） */
+.card-countdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.18), rgba(255, 152, 0, 0.18));
+  border: 1px solid rgba(255, 193, 7, 0.5);
+  border-radius: 20px;
+  padding: 4px 12px;
+  color: #ffb74d;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.card-countdown.expiring { /* 还剩不到 30 分钟 */
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.25), rgba(183, 28, 28, 0.25));
+  border-color: rgba(244, 67, 54, 0.7);
+  color: #ff8a80;
+  animation: cd-pulse 1.2s infinite alternate;
+}
+@keyframes cd-pulse {
+  from { filter: brightness(1); }
+  to   { filter: brightness(1.4); }
+}
+.card-countdown .cd-label { font-weight: normal; opacity: 0.8; }
+.card-countdown .cd-time { font-weight: bold; font-variant-numeric: tabular-nums; color: #fff; letter-spacing: 0.5px; }
+
+/* 游戏内右上角倒计时 */
+.card-countdown.game {
+  position: absolute;
+  top: 2vh;
+  right: 2vh;
+  z-index: 5;
+  padding: 6px 14px;
+  font-size: 15px;
+  flex-direction: row;
+}
+.card-countdown.game .cd-label { font-size: 13px; }
+.card-countdown.game .cd-time { font-size: 16px; }
+
+/* 隐藏原来的"或"分隔符（如果 HTML 里还留着的话） */
+.lobby-divider { display: none; }

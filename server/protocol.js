@@ -67,7 +67,11 @@ var ERR = {
   BAD_PAYLOAD: 'payload.bad',
   ROOM_ID_TAKEN: 'room.idTaken',
   SESSION_INVALID: 'session.invalid',
-  SEAT_TAKEN_OVER: 'seat.takenOver'
+  SEAT_TAKEN_OVER: 'seat.takenOver',
+  // 房主卡密码相关
+  ROOM_PWD_MISSING: 'room.pwd.missing',
+  ROOM_PWD_INVALID: 'room.pwd.invalid',
+  ROOM_PWD_USED: 'room.pwd.used'
 };
 
 // ---------- payload 校验：返回 {ok:true} 或 {ok:false, code, msg} ----------
@@ -94,7 +98,8 @@ function validateClient(msg) {
       if (msg.roomId !== undefined && !isStr(msg.roomId)) return bad(ERR.BAD_PAYLOAD, 'roomId 必须是字符串');
       if (msg.baseScore !== undefined && !isInt(msg.baseScore)) return bad(ERR.BAD_PAYLOAD, 'baseScore 必须是正整数');
       if (msg.initScore !== undefined && !isInt(msg.initScore)) return bad(ERR.BAD_PAYLOAD, 'initScore 必须是正整数');
-      return ok({ roomId: msg.roomId, baseScore: msg.baseScore, initScore: msg.initScore, name: msg.name });
+      if (!isStr(msg.password) || msg.password.length > 32) return bad(ERR.ROOM_PWD_MISSING, '缺少房主卡密码');
+      return ok({ roomId: msg.roomId, baseScore: msg.baseScore, initScore: msg.initScore, name: msg.name, password: msg.password });
     case C.JOIN_ROOM:
       if (!isStr(msg.roomId)) return bad(ERR.BAD_PAYLOAD, 'roomId 必须是字符串');
       return ok({ roomId: msg.roomId, name: msg.name });
