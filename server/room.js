@@ -131,6 +131,9 @@ Room.prototype.dispatch = function (sessionId, type, payload) {
 
   if (seat < 0) return { ok: false, code: ERR.NOT_IN_ROOM, msg: '你不在任何座位' };
 
+  // 解除托管：必须放在托管拦截之前，被托管的玩家才能发这个消息
+  if (type === C.CANCEL_TAKEOVER) return this._doCancelTakeover(sessionId, seat);
+
   // 阶段D 步骤3：本局已被电脑接管的座位，出牌类动作一律拒绝（下一局自动恢复）
   if (this.takenOver[seat] &&
       (type === C.DISCARD || type === C.PENG || type === C.KONG ||
@@ -295,6 +298,21 @@ Room.prototype._doRemoveBot = function (sessionId, seat) {
   if (!s || !s.isBot) return { ok: false, code: ERR.ACTION_INVALID, msg: '该座位不是机器人' };
   this.seats[seat] = null;
   this.broadcastRoomUpdate();
+  return { ok: true };
+};
+
+// 解除电脑托管：玩家回来后手动恢复自己的操作权
+Room.prototype._doCancelTakeover = function (sessionId, seat) {
+  if (this.status !== 'playing') return { ok: false, code: ERR.PHASE_WRONG, msg: '当前未在游戏中' };
+  // 没被托管就不用解除
+  if (!this.takenOver[seat]) return { ok: true };
+  this.takenOver[seat] = false;
+  this.timeoutCounts[seat] = 0;
+  // 如果轮到自己出牌，重新上正常倒计时（30s），让玩家有完整时间操作
+  if (this.engine.phase === 'discard' && this.engine.turn === seat) {
+    this._armDiscardTimer(seat);
+  }
+  this.broadcastState();
   return { ok: true };
 };
 

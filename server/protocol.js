@@ -19,7 +19,8 @@ var C = {
   ABORT_ROUND: 'abort_round',
   RECOVER_SESSION: 'recover_session',
   ADD_BOT: 'add_bot',
-  REMOVE_BOT: 'remove_bot'
+  REMOVE_BOT: 'remove_bot',
+  CANCEL_TAKEOVER: 'cancel_takeover'
 };
 
 // ---------- 服务端 → 客户端 消息类型 ----------
@@ -122,6 +123,7 @@ function validateClient(msg) {
     case C.NEXT_ROUND:
     case C.ABORT_ROUND:
     case C.ADD_BOT:
+    case C.CANCEL_TAKEOVER:
       return ok({});
     case C.REMOVE_BOT:
       if (!isInt(msg.seat) || msg.seat < 0 || msg.seat > 3) return bad(ERR.BAD_PAYLOAD, 'seat 必须 0-3');

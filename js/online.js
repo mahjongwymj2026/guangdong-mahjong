@@ -156,7 +156,7 @@
         bar.style.width = '100%';
         bar.className = 'turn-timer-bar';
         txt.className = 'turn-timer-text taken';
-        txt.textContent = '电脑托管中 · 下一局恢复你的操作';
+        txt.textContent = '电脑托管中';
         return;
       }
       var total = 0, deadline = 0, label = '', mine = false;
@@ -828,20 +828,30 @@
       var btnPass = document.getElementById('btnPass');
       var btnPlay = document.getElementById('btnPlay');
 
-      // 阶段D步骤3：本局已被电脑接管 → 全部按钮禁用并固定提示
+      // 阶段D步骤3：本局已被电脑接管 → 隐藏操作按钮，显示"解除托管"按钮
       if (s.takenOver && s.takenOver[online.mySeat]) {
-        [btnHu, btnKong, btnPeng, btnPass, btnPlay].forEach(function (b) { if (b) b.disabled = true; });
+        [btnHu, btnKong, btnPeng, btnPass, btnPlay].forEach(function (b) { if (b) { b.style.display = 'none'; b.disabled = true; } });
         if (btnPlay) btnPlay.classList.remove('lit');
         var bar0 = document.getElementById('actionBar');
-        if (bar0) bar0.style.visibility = 'hidden';
+        if (bar0) bar0.style.visibility = 'visible';
         var tip0 = document.getElementById('tipLine');
         var tipText0 = document.getElementById('tipText');
         if (tip0 && tipText0) {
           tip0.style.display = 'block';
-          tipText0.textContent = '电脑托管中 · 下一局自动恢复你的操作';
+          tipText0.textContent = '电脑托管中 · 点下方按钮恢复你的操作';
+        }
+        // 显示解除托管按钮
+        var btnCancel = document.getElementById('btnCancelTakeover');
+        if (btnCancel) {
+          btnCancel.style.display = 'inline-block';
+          btnCancel.onclick = action.onCancelTakeover;
         }
         return;
       }
+      // 非托管状态：隐藏解除托管按钮，显示正常操作按钮
+      var btnCancelHide = document.getElementById('btnCancelTakeover');
+      if (btnCancelHide) btnCancelHide.style.display = 'none';
+      [btnHu, btnKong, btnPeng, btnPass, btnPlay].forEach(function (b) { if (b) b.style.display = ''; });
       if (btnHu) btnHu.disabled = !(s.myCanHu || (s.myClaim && s.myClaim.hu));
       // 杠
       var btnKong = document.getElementById('btnKong');
@@ -1270,6 +1280,11 @@
       net.send('discard', { tile: tile, preIdx: preIdx });
       online.selectedIdx = null;
       render.myHand();
+    },
+
+    onCancelTakeover: function () {
+      net.send('cancel_takeover', {});
+      ui.toast('已解除托管，轮到你时可以正常操作', 'success');
     },
 
     onPeng: function () {

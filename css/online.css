@@ -298,6 +298,22 @@
   transform: translateX(-50%);
   visibility: hidden;
 }
+
+/* 解除托管按钮：醒目居中，区别于普通操作按钮 */
+.action-bar .btn.cancel-takeover {
+  background: linear-gradient(180deg, #ffd54f, #ffb300);
+  color: #3d1f00;
+  font-weight: bold;
+  font-size: 1.1em;
+  padding: 8px 28px;
+  border: 2px solid #ff8f00;
+  box-shadow: 0 0 12px rgba(255, 179, 0, 0.7);
+  animation: cancel-takeover-pulse 1.2s infinite ease-in-out;
+}
+@keyframes cancel-takeover-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(255, 179, 0, 0.7); }
+  50% { box-shadow: 0 0 22px rgba(255, 179, 0, 1); }
+}
 .turn-timer {
   position: absolute;
   bottom: 31vh;
