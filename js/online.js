@@ -281,13 +281,31 @@
             render.lobbyView();
           } else {
             if (m.evt === 'auto_action') ui.onAutoAction(m.detail);
-            sfx.fire(m.evt, m.detail);
+            // 先更新红雾等画面状态并重绘；声音等紧跟其后的 state 快照应用后再播，
+            // 避免"声音先响、牌还没打出来"的错位
+            sfx.applyState(m.evt, m.detail);
             render.all();
+            online._pendingSfx = { evt: m.evt, detail: m.detail };
+            // 兜底：万一该事件后没有 state 快照，30ms 后照播，不丢声音
+            setTimeout(function () {
+              if (online._pendingSfx) {
+                var p = online._pendingSfx;
+                online._pendingSfx = null;
+                sfx.play(p.evt, p.detail);
+              }
+            }, 30);
           }
           break;
         case 'state':
-          state.apply(m.state);
+          var fxRes = state.apply(m.state);
           render.all();
+          // 画面已更新为最新快照，此时再播放事件声音，声画基本同步
+          if (online._pendingSfx) {
+            var pend = online._pendingSfx;
+            online._pendingSfx = null;
+            sfx.play(pend.evt, pend.detail);
+          }
+          if (fxRes && fxRes.lightning) triggerLightning();
           break;
         case 'error':
           ui.toast(translateErr(m.code) || m.msg || m.code, 'error');
@@ -327,6 +345,8 @@
   var state = {
     apply: function (snap) {
       if (!snap) return;
+      // 闪电标记：只记录、不在此处触发，由消息层在画面重绘后触发（声画同步）
+      var fxLightning = false;
       var prevPhase = online.cur ? online.cur.phase : null;
       var prevRound = online.cur ? online.cur.roundNum : 0;
       // 保存 apply 前的 mySeat.lastDraw（用于摸牌鬼牌闪电检测）
@@ -355,7 +375,7 @@
           var hasGhost = false;
           if (p.hand && p.hand.indexOf(snap.ghost) >= 0) hasGhost = true;
           if (p.lastDraw && p.lastDraw === snap.ghost) hasGhost = true;
-          if (hasGhost) triggerLightning();
+          if (hasGhost) fxLightning = true;
         }
       }
       // 阶段E-3：摸牌摸到鬼 → 闪电（自己刚摸完进入 discard 阶段，lastDraw 新变成鬼）
@@ -364,9 +384,10 @@
           && snap.roundNum === prevRound) {
         var p2 = snap.players[online.mySeat];
         if (p2 && p2.lastDraw === snap.ghost && oldLastDraw !== snap.ghost) {
-          triggerLightning();
+          fxLightning = true;
         }
       }
+      return { lightning: fxLightning };
     },
     applyRoomState: function (detail) {
       online.room = detail;
@@ -410,7 +431,8 @@
   };
 
   var sfx = {
-    fire: function (evt, detail) {
+    // 第一步（重绘前）：只更新红雾等画面状态，保证 render.all 画出最新特效
+    applyState: function (evt, detail) {
       detail = detail || {};
       // 阶段E：碰杠红雾状态设置（独立于 snd 是否加载）
       if (evt === 'peng') {
@@ -426,7 +448,11 @@
         online.mistVictims = [];
         online.mistCaller = null;
       }
-      // 阶段E：抢杠爆火花（无音效，独立于 snd）
+    },
+    // 第二步（重绘后）：播放声音、触发瞬时视觉特效
+    play: function (evt, detail) {
+      detail = detail || {};
+      // 阶段E：抢杠爆火花（无音效，独立于 snd；需在 render.melds 建好节点后）
       if (evt === 'hu' && detail.robKong) {
         var provider = (detail.provider != null) ? detail.provider
           : (online.mistCaller ? online.mistCaller.seat : null);
