@@ -43,6 +43,7 @@
 /* ---------- 麻将牌（通用图片） ---------- */
 .mj {
   height: 4.6vh;
+  aspect-ratio: 3 / 4; /* 牌图统一 600x800，解码前先占好宽度，杜绝加载时整排抖动 */
   display: block;
   border-radius: 0.3vh;
   background: #faf6ec;

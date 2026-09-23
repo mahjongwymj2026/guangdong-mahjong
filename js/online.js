@@ -700,6 +700,19 @@
       }
     },
 
+    // 轻量选中态切换：只改 class，不重建 DOM，杜绝选牌时整排牌抖动/漂移
+    updateSelection: function () {
+      var box = document.getElementById('myHand');
+      if (!box) return;
+      var tiles = box.querySelectorAll('.hand-tile');
+      for (var i = 0; i < tiles.length; i++) {
+        var el = tiles[i];
+        var isSel = (online.selectedIdx !== null && el.getAttribute('data-idx') === String(online.selectedIdx));
+        if (isSel) el.classList.add('selected');
+        else el.classList.remove('selected');
+      }
+    },
+
     aiHand: function (seat) {
       var s = online.cur;
       if (!s || !s.players || !s.players[seat]) return;
@@ -1240,9 +1253,9 @@
         net.send('discard', { tile: tile, preIdx: preIdx });
         return;
       }
-      // 没选中 → 选中
+      // 没选中 → 选中（只切换 class，不重绘手牌，避免漂移）
       online.selectedIdx = idx;
-      render.myHand();
+      render.updateSelection();
       render.actionBar();
     },
 
