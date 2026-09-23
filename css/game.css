@@ -102,7 +102,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.3vh;
+  gap: 1.3vh;
   z-index: 2;
   top: 50%;
   transform: translateY(calc(-50% - 10vh));
@@ -116,7 +116,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.3vh;
+  gap: 1.3vh;
   z-index: 2;
 }
 
@@ -322,13 +322,13 @@
 
 /* —— 三家 AI 座位内部排版 —— */
 .seat-top { max-height: 44vh; }
-.seat-top .top-main { display: flex; align-items: center; gap: 1vh; }
+.seat-top .top-main { display: flex; align-items: center; gap: 0; }
 .seat-top .seat-hand-h { display: flex; flex-direction: row; gap: 0; align-items: flex-end; }
 /* 对家手牌牌背：大小照搬右家（5.5vh），横排不旋转、紧挨无间距 */
 #topHand .mj-back { height: 5.5vh; width: auto; aspect-ratio: 1/1.4; }
 .seat-right { max-width: 24vh; }
-.seat-left .left-body { display: flex; align-items: flex-start; flex-direction: row; gap: 0.5vh; }
-.seat-right .right-body { display: flex; align-items: flex-end; flex-direction: row; gap: 0.5vh; }
+.seat-left .left-body { display: flex; align-items: flex-start; flex-direction: row; gap: 0; }
+.seat-right .right-body { display: flex; align-items: flex-end; flex-direction: row; gap: 0; }
 /* 左家手牌：竖排；牌背 5.5vh；间距 0.3vh（明显）；每张牌顺时针转 90° */
 .seat-left .left-back-col { display: flex !important; flex-direction: column !important; gap: 0 !important; max-height: none; margin-left: 2vh; }
 .seat-left .left-back-col .mj-back { height: 5.5vh; width: auto; aspect-ratio: 1/1.4; transform: rotate(90deg); margin-bottom: -1.57vh; }
@@ -336,11 +336,11 @@
 .seat-right .right-back-col { display: flex !important; flex-direction: column !important; gap: 0 !important; max-height: none; margin-right: 2vh; }
 .seat-right .right-back-col .mj-back { height: 5.5vh; width: auto; aspect-ratio: 1/1.4; transform: rotate(270deg); margin-bottom: -1.57vh; }
 /* 左家弃牌：从上往下打；0.15vh 间距（与对家一致）；每张牌顺时针转 90° */
-.seat-left .pond-left { flex-direction: column; flex-wrap: nowrap; gap: 0.15vh; max-height: none; overflow: visible; margin-left: 2vh; }
-.seat-left #leftPond img { height: 5vh; width: auto; object-fit: contain; display: block; transform: rotate(90deg); margin-bottom: -1.43vh; }
+.seat-left .pond-left { flex-direction: column; flex-wrap: nowrap; gap: 0.15vh; max-height: none; overflow: visible; margin-left: 1.3vh; }
+.seat-left #leftPond img { height: 3.4vh; width: auto; object-fit: contain; display: block; transform: rotate(90deg); margin-bottom: -1.43vh; }
 /* 右家弃牌：在手牌左边，底部对齐手牌底部；第一张从下方（尾部）开始，新牌往上排；间距照搬左家 */
-.seat-right .pond-right { flex-direction: column-reverse; flex-wrap: nowrap; justify-content: flex-start; gap: 0.15vh; max-height: none; overflow: visible; margin-right: 2vh; }
-.seat-right #rightPond img { height: 5vh; width: auto; object-fit: contain; display: block; transform: rotate(270deg); margin-bottom: -1.43vh; }
+.seat-right .pond-right { flex-direction: column-reverse; flex-wrap: nowrap; justify-content: flex-start; gap: 0.15vh; max-height: none; overflow: visible; margin-right: 1.3vh; }
+.seat-right #rightPond img { height: 3.4vh; width: auto; object-fit: contain; display: block; transform: rotate(270deg); margin-bottom: -1.43vh; }
 .right-back-col { max-height: none; }
 
 /* —— 自己的手牌：底部横向一排，新摸的牌默认放最右 —— */
@@ -456,8 +456,8 @@
 .my-pond-wrapper { min-height: 3vh; min-width: 20vh; padding: 0.5vh; }
 /* 自己的弃牌池：比通用弃牌大，与手牌呼应 */
 #myPond img { height: 8vh; }
-/* 对家弃牌：大小照搬右家（5vh），横排不旋转；间距用 .pond 的 0.15vh */
-#topPond img { height: 5vh; }
+/* 对家弃牌：统一为 3.4vh（和左家一致），横排不旋转 */
+#topPond img { height: 3.4vh; }
 /* 其它三家弃牌保持通用 3.4vh（比自己的小，突出自己的弃牌） */
 .pond img { height: 3.4vh; object-fit: contain; display: block; }
 .pond-top { align-self: stretch; flex-direction: row-reverse; justify-content: flex-start; }
@@ -648,7 +648,7 @@
 }
 
 .my-melds-wrapper { padding: 0.2vh; }
-.top-melds img { height: 3.6vh; object-fit: contain; display: block; }
+.top-melds img { height: 3.4vh; object-fit: contain; display: block; }
 /* 左家三件套：保持通用尺寸 */
 #leftPond img { height: 3.4vh; }
 

@@ -433,11 +433,10 @@
   .my-melds .meld .tiles-row { gap: 0; }
   .my-melds .meld img + img { margin-left: -0.25vw; }
 
-  /* 其他三家牌也放大，但比自己的小 */
+  /* 其他三家牌统一尺寸（以左家为标准） */
   .mj-back { height: 3vw; width: 2.2vw; }
-  .pond img { height: 2.6vw; }
-  .right-melds img, .top-melds img { height: 2.8vw; }
-  .left-melds img { height: 3.6vw; }  /* 左家副露放大 30% */
+  .pond img { height: 3.4vw; }  /* 三家弃牌统一 3.4vw */
+  .left-melds img, .right-melds img, .top-melds img { height: 3.6vw; }  /* 三家副露统一 3.6vw */
 
   /* 左家整体上移到返回按钮下面 */
   .seat-left {
@@ -446,17 +445,17 @@
     bottom: auto;
     transform: none;
   }
-  .seat-left #leftPond img { height: 3.4vw; }  /* 左家弃牌放大 30% */
-  /* 三家所有 gap/margin 清零，统一无间距 */
-  .pond { gap: 0; }  /* 基础类：四家弃牌全清零 */
+  /* 三家 gap/margin 清零，但旋转牌留最小间距避免重叠 */
+  .pond { gap: 0; }
   .seat-left .left-body { gap: 0; }
-  .seat-left .pond-left { margin-left: 0; }
+  .seat-left .pond-left { margin-left: 0.9vw; }  /* 旋转牌避免重叠的最小间距 */
   .seat-left .left-back-col { margin-left: 0; }
   .seat-right .right-body { gap: 0; }
-  .seat-right .pond-right { margin-right: 0; }
+  .seat-right .pond-right { margin-right: 0.9vw; }
   .seat-right .right-back-col { margin-right: 0; }
   .seat-top .top-main { gap: 0; }
   .top-pond { margin: 0; }
+  .seat-left, .seat-right { gap: 0.9vw; }  /* 副露与手牌垂直方向避免重叠 */
 
   /* 左右家手牌/弃牌/副露（竖排旋转） */
   .seat-left .left-back-col .mj-back { height: 3vw; margin-bottom: -0.8vw; }
