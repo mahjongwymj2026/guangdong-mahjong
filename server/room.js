@@ -688,13 +688,44 @@ Room.prototype.markDisconnected = function (sessionId) {
   if (this.ownerSessionId === sessionId) {
     this.ownerSessionId = this._findNextOwner(sessionId);
   }
-  // 情况2：还有其他在线真人 → 断线者立即托管（不等 2 次超时）
-  if (this.hasRealPlayer() && this.status === 'playing') {
-    this.takenOver[seat] = true;
-    this._clearAutoTimerForSeat(seat);
-    this._rearmForSeat(seat);   // 启动机器人定时器（1.2s 后代出/代 pass）
+  if (this.hasRealPlayer()) {
+    // 情况2：还有其他在线真人 → 断线者立即托管（不等 2 次超时）
+    if (this.status === 'playing') {
+      this.takenOver[seat] = true;
+      this._clearAutoTimerForSeat(seat);
+      this._rearmForSeat(seat);   // 启动机器人定时器（1.2s 后代出/代 pass）
+    }
+    this.broadcastRoomUpdate();
+  } else {
+    // 情况1：无在线真人 → 结束本局，清空座位，房间保留（可用房号回来）
+    this._clearAllAutoTimers();
+    this.deadlines = { discard: 0, claim: 0 };
+    if (this.status === 'playing') {
+      // 回滚到本局开始前积分
+      if (this.engine.preRoundPoints) {
+        for (var i = 0; i < 4; i++) {
+          if (this.engine.preRoundPoints[i] !== undefined) {
+            this.engine.players[i].points = this.engine.preRoundPoints[i];
+          }
+        }
+      }
+      this.engine.ended = true;
+      this.engine.phase = 'end';
+      this.engine.endData = {
+        aborted: true, draw: true, name: '玩家断线',
+        scores: [0, 0, 0, 0],
+        points: this.engine.players.map(function (pl) { return pl.points; }),
+        hands: this.engine.players.map(function (pl, i) { return this.engine.evalHandFor(i); }, this),
+        melds: this.engine.players.map(function (pl) { return pl.melds.slice(); }),
+        pendingScores: []
+      };
+      this.status = 'waiting';
+      this.broadcastEvent(EVT.ROUND_END, { aborted: true });
+    }
+    // 清空座位（房号还能用，回来坐同一位置）
+    this.seats[seat] = null;
+    this.broadcastRoomUpdate();
   }
-  this.broadcastRoomUpdate();
 };
 
 // ---------- 阶段D 步骤3：服务端托管定时器 ----------
@@ -964,19 +995,12 @@ RoomManager.prototype.markDisconnected = function (sessionId) {
   var entry = this.sessionRoom.get(sessionId);
   if (!entry) return;
   var room = entry.room;
-  var self = this;
   room.markDisconnected(sessionId);
-  // 情况1：无在线真人 → 立即销毁房间（就当玩单机，新建房再玩）
-  if (!room.hasRealPlayer()) {
-    room._dispose();
-    room.seats.forEach(function (s) {
-      if (s && s.sessionId) self.sessionRoom.delete(s.sessionId);
-    });
-    this.rooms.delete(room.roomId);
+  // 座位被清空（1真人断线）→ 清理 sessionRoom 映射，房间保留（机器人维持）
+  if (room.seatOf(sessionId) < 0) {
     this.sessionRoom.delete(sessionId);
-    return;
   }
-  // 情况2：还有在线真人 → 座位保留（takenOver=true），映射保留供重连
+  // 全空（无机器人维持）→ 销毁
   if (room.isEmpty()) {
     room._dispose();
     this.rooms.delete(room.roomId);
