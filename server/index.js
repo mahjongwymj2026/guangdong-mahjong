@@ -82,6 +82,8 @@ wss.on('connection', function(ws) {
   ws.on('pong', function() { ws.isAlive = true; });
 
   ws.on('message', function(raw) {
+    // 收到任何应用层消息都视为连接存活（覆盖手机切后台协议层 ping 无法响应的场景）
+    ws.isAlive = true;
     var msg;
     try { msg = JSON.parse(raw.toString()); }
     catch (e) {
@@ -194,14 +196,15 @@ wss.on('connection', function(ws) {
   });
 });
 
-// 30秒心跳：及时发现手机锁屏/切后台的死连接（阶段E重连托管要用）
+// 90秒心跳：及时发现手机锁屏/切后台的死连接（阶段E重连托管要用）
+// 间隔从 30s → 90s，给手机切后台回微信等短暂切窗口场景更长的缓冲，避免误判断线
 setInterval(function() {
   wss.clients.forEach(function(ws) {
     if (ws.isAlive === false) { ws.terminate(); return; }
     ws.isAlive = false;
     ws.ping();
   });
-}, 30000);
+}, 90000);
 
 // 5分钟清理空闲房间
 setInterval(function() {

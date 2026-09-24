@@ -1553,6 +1553,19 @@
     ui.showLobby();
     timer.start();   // 阶段D步骤3：倒计时条常驻刷新（无状态时自动隐藏）
     net.connect();
+    // 切窗口/切 APP（如回微信）再切回网页时：刷新服务器心跳，若已断开则立即重连
+    // 让短暂切后台不算"退出"，只要没关浏览器就保持在线
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState !== 'visible') return;
+      if (online.ws && online.ws.readyState === 1) {
+        // 连接仍活着：立即发 ping 刷新服务器心跳，避免被 90s 心跳误判掉线
+        try { online.ws.send(JSON.stringify({ type: 'ping' })); } catch (e) {}
+      } else {
+        // 连接已断：取消 3 秒等待，立即重连
+        if (online.reconnectTimer) { clearTimeout(online.reconnectTimer); online.reconnectTimer = null; }
+        net.connect();
+      }
+    });
   }
 
   // 暴露
