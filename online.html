@@ -230,6 +230,20 @@
       </div>
     </div>
 
+    <!-- 房间到期弹窗（6小时房主卡到期） -->
+    <div class="modal-mask" id="expiredModal" style="display:none; z-index:1100;">
+      <div class="modal" style="text-align:center; max-width: 80vw;">
+        <div class="m-title" style="color:#ff6b6b;">房间时间已到</div>
+        <div style="font-size:1.6vh; line-height:1.8; margin:1.5vh 0 2vh; color:#eee;">
+          本房间的房主卡已到期，房间即将关闭。<br>
+          请使用新的房主卡重新开房。
+        </div>
+        <div class="m-btns" style="justify-content:center;">
+          <button class="btn btn-primary" id="btnExpiredBack">返回大厅</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 局数显示 -->
     <div class="round-info" id="roundInfo">第 1 局</div>
   </div>
@@ -247,6 +261,6 @@
 
   <script src="js/mahjong.js?v=38"></script>
   <script src="js/sounds.js?v=33"></script>
-  <script src="js/online.js?v=20"></script>
+  <script src="js/online.js?v=21"></script>
 </body>
 </html>

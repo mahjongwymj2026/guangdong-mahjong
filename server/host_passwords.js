@@ -21,6 +21,11 @@ function _randPwd() {
 const available = new Map();
 const used = new Map();
 
+// 房主卡有效期：默认 6 小时；可用环境变量 CARD_TTL_MS 覆盖（仅测试用）
+const CARD_TTL_MS = (Number(process.env.CARD_TTL_MS) > 0)
+  ? Number(process.env.CARD_TTL_MS)
+  : 6 * 3600 * 1000;
+
 // ====== 对外 API ======
 
 /** 生成 n 条新密码，返回数组 */
@@ -52,7 +57,7 @@ function markUsed(pwd, roomId) {
   }
   available.delete(pwd);
   const now = Date.now();
-  const expiry = now + 6 * 3600 * 1000; // 6 小时
+  const expiry = now + CARD_TTL_MS;
   used.set(pwd, { roomId: roomId, firstUsedAt: now, expiresAt: expiry });
   return { ok: true, cardExpiry: expiry };
 }

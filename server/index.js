@@ -121,9 +121,9 @@ wss.on('connection', function(ws) {
         // 标记密码已用，拿 cardExpiry（6 小时过期时间戳）
         var mark = hp.markUsed(pwd, r.roomId);
         var cardExpiry = mark.ok ? mark.cardExpiry : 0;
-        // 更新 Room 的 cardExpiry
+        // 更新 Room 的 cardExpiry 并启动 6 小时到期定时器
         var room = roomMgr.getRoomOf(sid);
-        if (room && cardExpiry) room.cardExpiry = cardExpiry;
+        if (room && cardExpiry) { room.cardExpiry = cardExpiry; room._armExpiry(); }
         ws.send(JSON.stringify({ type: S.ROOM_CREATED, roomId: r.roomId, seat: r.seat, cardExpiry: cardExpiry }));
       } else {
         ws.send(JSON.stringify({ type: S.ERROR, code: r.code, msg: r.msg }));
@@ -154,6 +154,11 @@ wss.on('connection', function(ws) {
       if (oldSeat < 0) {
         console.log('[recover] 失败: oldSid 未绑定座位');
         ws.send(JSON.stringify({ type: S.ERROR, code: ERR.SESSION_INVALID, msg: '旧会话未绑定座位' }));
+        return;
+      }
+      if (entry.room.expired) {
+        console.log('[recover] 失败: 房间已到期');
+        ws.send(JSON.stringify({ type: S.ERROR, code: ERR.ROOM_EXPIRED, msg: '房间时间已到，房号已失效' }));
         return;
       }
       if (entry.room.seats[oldSeat].connected) {

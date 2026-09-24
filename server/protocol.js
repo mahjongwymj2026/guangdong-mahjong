@@ -49,7 +49,8 @@ var EVT = {
   HUANGZHUANG: 'huangzhuang',
   CLAIM_OPTIONS: 'claim_options',
   ROOM_STATE: 'room_state',
-  AUTO_ACTION: 'auto_action'        // 阶段D 步骤3：服务端代出/代 pass 提示
+  AUTO_ACTION: 'auto_action',       // 阶段D 步骤3：服务端代出/代 pass 提示
+  ROOM_EXPIRED: 'room_expired'      // 房主卡 6 小时到期，房间关闭
 };
 
 // ---------- 错误码 ----------
@@ -72,7 +73,8 @@ var ERR = {
   // 房主卡密码相关
   ROOM_PWD_MISSING: 'room.pwd.missing',
   ROOM_PWD_INVALID: 'room.pwd.invalid',
-  ROOM_PWD_USED: 'room.pwd.used'
+  ROOM_PWD_USED: 'room.pwd.used',
+  ROOM_EXPIRED: 'room.expired'      // 房间已到期
 };
 
 // ---------- payload 校验：返回 {ok:true} 或 {ok:false, code, msg} ----------

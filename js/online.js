@@ -60,6 +60,15 @@
       document.getElementById('lobby').style.display = 'none';
       document.getElementById('gameRoot').style.display = 'block';
     },
+    // 房间到期：中央弹窗提示，玩家看完结算后点"返回大厅"
+    showRoomExpired: function () {
+      var modal = document.getElementById('expiredModal');
+      if (modal) modal.style.display = 'flex';
+      var cdLobby = document.getElementById('cardCountdown');
+      var cdGame = document.getElementById('gameCardCountdown');
+      if (cdLobby) cdLobby.style.display = 'none';
+      if (cdGame) cdGame.style.display = 'none';
+    },
     setLobbyStatus: function (msg) {
       var el = document.getElementById('lobbyStatus');
       if (el) el.textContent = msg || '';
@@ -329,6 +338,9 @@
           if (m.evt === 'room_state') {
             state.applyRoomState(m.detail);
             render.lobbyView();
+          } else if (m.evt === 'room_expired') {
+            // 房间 6 小时到期：弹窗提示（结算画面在下层，不影响看结果）
+            ui.showRoomExpired();
           } else {
             if (m.evt === 'auto_action') ui.onAutoAction(m.detail);
             // 先更新红雾等画面状态并重绘；声音等紧跟其后的 state 快照应用后再播，
@@ -369,6 +381,18 @@
             try { localStorage.removeItem('mj_online_session'); } catch (e) {}
             ui.setLobbyStatus('已连接服务器，请创建或加入房间');
           }
+          // 房间到期：清会话、隐藏到期弹窗、回大厅
+          if (m.code === 'room.expired') {
+            try { localStorage.removeItem('mj_online_session'); } catch (e) {}
+            var em = document.getElementById('expiredModal');
+            if (em) em.style.display = 'none';
+            online.roomId = null;
+            online.mySeat = -1;
+            online.room = null;
+            online.cur = null;
+            ui.showLobby();
+            ui.setLobbyStatus('房间时间已到，请使用新房主卡重新开房');
+          }
           break;
         case 'pong':
           break;
@@ -395,7 +419,8 @@
       // 房主卡密码
       'room.pwd.missing': '请输入房主卡密码',
       'room.pwd.invalid': '房主卡密码无效或已使用',
-      'room.pwd.used': '房主卡已失效，请联系房主获取新卡'
+      'room.pwd.used': '房主卡已失效，请联系房主获取新卡',
+      'room.expired': '房间时间已到，请使用新房主卡'
     };
     return map[code];
   }
@@ -1395,6 +1420,23 @@
       try { localStorage.removeItem('mj_online_session'); } catch (e) {}
       if (online.ws) { try { online.ws.close(); } catch (e) {} }
       location.href = 'index.html';
+    },
+
+    // 房间到期弹窗：返回大厅（不弹确认框）
+    onExpiredBack: function () {
+      net.send('leave_room', {});
+      online.roomId = null;
+      online.mySeat = -1;
+      online.room = null;
+      online.cur = null;
+      try { localStorage.removeItem('mj_online_session'); } catch (e) {}
+      var modal = document.getElementById('expiredModal');
+      if (modal) modal.style.display = 'none';
+      var endModal = document.getElementById('endModal');
+      if (endModal) endModal.style.display = 'none';
+      document.getElementById('roomCard').style.display = 'none';
+      ui.showLobby();
+      ui.setLobbyStatus('房间已结束，请使用新房主卡重新开房');
     }
   };
 
@@ -1448,6 +1490,7 @@
     var btnPass = document.getElementById('btnPass');
     var btnNextRound = document.getElementById('btnNextRound');
     var btnBackHome = document.getElementById('btnBackHome');
+    var btnExpiredBack = document.getElementById('btnExpiredBack');
     var btnBackHomeTop = document.getElementById('btnBackHomeTop');
     var btnLobbyBackHome = document.getElementById('btnLobbyBackHome');
     var nickInput = document.getElementById('nickInput');
@@ -1468,6 +1511,7 @@
     if (btnPass) btnPass.addEventListener('click', action.onPass);
     if (btnNextRound) btnNextRound.addEventListener('click', action.onNextRound);
     if (btnBackHome) btnBackHome.addEventListener('click', action.onBackHome);
+    if (btnExpiredBack) btnExpiredBack.addEventListener('click', action.onExpiredBack);
     if (btnBackHomeTop) btnBackHomeTop.addEventListener('click', action.onBackHome);
     if (btnLobbyBackHome) btnLobbyBackHome.addEventListener('click', action.onBackHome);
 

@@ -38,7 +38,60 @@ function Room(roomId, baseScore, initScore, cardExpiry) {
   this.takenOver = [false, false, false, false];  // 本局是否已被电脑接管
   this.deadlines = { discard: 0, claim: 0 };       // 当前阶段截止时间戳（随快照发给客户端做倒计时）
   this.botSeq = 0;                                  // 机器人编号计数
+
+  // 房主卡 6 小时到期
+  this.expired = false;                // 房间已到期：房号失效，禁止加入/开局/下一局
+  this._expirePending = false;         // 已到点但本局未结束，等打完本局再关
+  this._expireTimer = null;            // 到点定时器
+  this._destroyTimer = null;           // 到期后延迟 10 秒销毁房间
+  this.onExpired = null;               // RoomManager 注入：销毁房间回调
+  this._armExpiry();
 }
+
+// ---------- 房主卡到期 ----------
+// 按 cardExpiry 启动到点定时器（无论有没有人玩都在倒计时）
+Room.prototype._armExpiry = function () {
+  if (!this.cardExpiry) return;        // 无卡不启动
+  var self = this;
+  var remain = this.cardExpiry - Date.now();
+  if (remain <= 0) { remain = 1; }     // 容错
+  this._expireTimer = setTimeout(function () { self._onCardExpire(); }, remain);
+};
+
+// 到点：正在打牌就等本局结束，否则立即关房
+Room.prototype._onCardExpire = function () {
+  if (this.expired) return;
+  if (this.status === 'playing' && this.engine.phase !== 'end' && this.engine.phase !== 'idle') {
+    this._expirePending = true;
+    return;
+  }
+  this._expireRoom();
+};
+
+// 每次状态广播后检查：到点且本局已结束 → 关房（统一收口，覆盖胡牌/荒庄所有结束路径）
+Room.prototype._checkExpireAfterRound = function () {
+  if (this._expirePending && this.engine.phase === 'end') this._expireRoom();
+};
+
+// 关房：全房推送到期通知，10 秒后销毁房间（房号永久失效）
+Room.prototype._expireRoom = function () {
+  if (this.expired) return;
+  this.expired = true;
+  this._expirePending = false;
+  this._clearAllAutoTimers();
+  this.broadcastEvent(EVT.ROOM_EXPIRED, { roomId: this.roomId });
+  var self = this;
+  this._destroyTimer = setTimeout(function () {
+    if (typeof self.onExpired === 'function') self.onExpired();
+  }, 10000);
+};
+
+// 销毁前清理定时器
+Room.prototype._dispose = function () {
+  if (this._expireTimer) { clearTimeout(this._expireTimer); this._expireTimer = null; }
+  if (this._destroyTimer) { clearTimeout(this._destroyTimer); this._destroyTimer = null; }
+  this._clearAllAutoTimers();
+};
 
 Room.prototype.isEmpty = function () {
   for (var i = 0; i < 4; i++) {
@@ -103,6 +156,8 @@ Room.prototype.broadcastEvent = function (type, detail) {
 
 // 广播 state 给每个座位（按 viewerSeat 过滤）
 Room.prototype.broadcastState = function () {
+  // 统一收口：到点且本局已结束 → 立即关房（覆盖胡牌/荒庄/中止所有结束路径）
+  if (this._expirePending) this._checkExpireAfterRound();
   for (var i = 0; i < 4; i++) {
     var s = this.seats[i];
     if (!s || !s.connected) continue;
@@ -226,6 +281,7 @@ Room.prototype._doLeave = function (sessionId) {
 };
 
 Room.prototype._doStartRound = function (sessionId, seat) {
+  if (this.expired || this._expirePending) return { ok: false, code: ERR.ROOM_EXPIRED, msg: '房间时间已到，请使用新房主卡' };
   if (this.ownerSessionId !== sessionId) return { ok: false, code: ERR.NOT_OWNER, msg: '只有房主可以开局' };
   if (this.playerCount() < 4) return { ok: false, code: ERR.ROOM_NOT_FULL, msg: '需满 4 人才可开局' };
   if (this.status === 'playing') return { ok: false, code: ERR.ALREADY_STARTED, msg: '本局已开始' };
@@ -242,6 +298,7 @@ Room.prototype._doStartRound = function (sessionId, seat) {
 };
 
 Room.prototype._doNextRound = function (sessionId, seat) {
+  if (this.expired || this._expirePending) return { ok: false, code: ERR.ROOM_EXPIRED, msg: '房间时间已到，请使用新房主卡' };
   if (this.ownerSessionId !== sessionId) return { ok: false, code: ERR.NOT_OWNER, msg: '只有房主可以开下一局' };
   if (this.engine.phase !== 'end' && this.engine.phase !== 'idle') {
     return { ok: false, code: ERR.PHASE_WRONG, msg: '本局尚未结束' };
@@ -839,6 +896,15 @@ RoomManager.prototype.createRoom = function (sessionId, ws, opts) {
   if (this.rooms.has(roomId)) return { ok: false, code: ERR.ROOM_ID_TAKEN, msg: '房间号已存在' };
 
   var room = new Room(roomId, opts.baseScore, opts.initScore, opts.cardExpiry || 0);
+  var mgr = this;
+  // 房间到期：通知发出 10 秒后强制销毁（含机器人房），房号永久失效
+  room.onExpired = function () {
+    room._dispose();
+    room.seats.forEach(function (s) {
+      if (s && s.sessionId) mgr.sessionRoom.delete(s.sessionId);
+    });
+    mgr.rooms.delete(room.roomId);
+  };
   this.rooms.set(roomId, room);
   var seat = room.attachWs(sessionId, ws, opts.name);
   this.sessionRoom.set(sessionId, { room: room, seat: seat });
@@ -860,6 +926,7 @@ RoomManager.prototype.joinRoom = function (sessionId, ws, roomId, name) {
 
   var room = this.rooms.get(roomId);
   if (!room) return { ok: false, code: ERR.ROOM_NOT_FOUND, msg: '房间不存在' };
+  if (room.expired) return { ok: false, code: ERR.ROOM_EXPIRED, msg: '房间时间已到，房号已失效' };
 
   var seat = room.attachWs(sessionId, ws, name);
   if (seat < 0) return { ok: false, code: ERR.ROOM_FULL, msg: '房间满座' };
@@ -874,7 +941,7 @@ RoomManager.prototype.leaveRoom = function (sessionId) {
   room._doLeave(sessionId);
   this.sessionRoom.delete(sessionId);
   // 房间空 → 清理
-  if (room.isEmpty()) this.rooms.delete(room.roomId);
+  if (room.isEmpty()) { room._dispose(); this.rooms.delete(room.roomId); }
   return { ok: true };
 };
 
@@ -883,6 +950,7 @@ RoomManager.prototype.markDisconnected = function (sessionId) {
   if (!entry) return;
   entry.room.markDisconnected(sessionId);
   if (entry.room.isEmpty()) {
+    entry.room._dispose();
     this.rooms.delete(entry.room.roomId);
     this.sessionRoom.delete(sessionId);
   }
@@ -913,7 +981,7 @@ RoomManager.prototype.cleanupIdle = function () {
   toDel.forEach(function (id) {
     var room = self.rooms.get(id);
     if (!room) return;
-    room._clearAllAutoTimers();   // 防泄漏：销毁房间前清掉全部托管定时器
+    room._dispose();             // 防泄漏：销毁房间前清掉全部定时器（含到期定时器）
     room.seats.forEach(function (s) {
       if (s) self.sessionRoom.delete(s.sessionId);
     });
