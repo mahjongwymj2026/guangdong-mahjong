@@ -280,11 +280,28 @@
         if (!confirm('确定清空全部可用密码？已使用过的不受影响。')) return;
         apiFetch(`${API}/passwords/clear`, { method: 'POST' }).then(loadState);
       };
-      // 点击密码复制
+      // 点击密码复制（兼容 HTTP / 微信浏览器）
       document.querySelectorAll('td code').forEach(el => {
-        el.onclick = () => {
-          navigator.clipboard && navigator.clipboard.writeText(el.textContent);
-          el.style.background = 'rgba(255,213,79,0.4)';
+        el.onclick = async () => {
+          var text = el.textContent;
+          var ok = false;
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(text);
+              ok = true;
+            }
+          } catch (e) {}
+          if (!ok) {
+            // fallback: 临时 input + execCommand
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); ok = true; } catch (e) {}
+            document.body.removeChild(ta);
+          }
+          el.style.background = ok ? 'rgba(255,213,79,0.4)' : 'rgba(255,100,100,0.3)';
           setTimeout(() => el.style.background = '', 600);
         };
       });
