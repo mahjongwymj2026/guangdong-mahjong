@@ -280,33 +280,51 @@
         if (!confirm('确定清空全部可用密码？已使用过的不受影响。')) return;
         apiFetch(`${API}/passwords/clear`, { method: 'POST' }).then(loadState);
       };
-      // 点击密码复制（事件委托，不惧 innerHTML 重建）
-      if (!window._pwdCopyBound) {
-        window._pwdCopyBound = true;
-        document.addEventListener('click', async (e) => {
-          var el = e.target;
-          if (el.tagName !== 'CODE' || !el.closest('td')) return;
-          var text = el.textContent;
-          var ok = false;
-          try {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-              await navigator.clipboard.writeText(text);
-              ok = true;
-            }
-          } catch (err) {}
-          if (!ok) {
-            var ta = document.createElement('textarea');
-            ta.value = text;
-            ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
-            document.body.appendChild(ta);
-            ta.select();
-            try { document.execCommand('copy'); ok = true; } catch (err) {}
-            document.body.removeChild(ta);
-          }
-          el.style.background = ok ? 'rgba(255,213,79,0.4)' : 'rgba(255,100,100,0.3)';
-          setTimeout(() => el.style.background = '', 600);
+    }
+
+    // ---------- 复制密码（直接绑定到每个 <code>，手机浏览器可靠）----------
+    function copyPwd(text, el) {
+      // 优先 clipboard API（HTTPS 手机成功率高），失败回退 execCommand
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          flashCopy(el, true);
+        }).catch(function () {
+          flashCopy(el, execCopy(text));
         });
+      } else {
+        flashCopy(el, execCopy(text));
       }
+    }
+    function execCopy(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try { ta.setSelectionRange(0, 99999); } catch (e) {}
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      return ok;
+    }
+    function flashCopy(el, ok) {
+      el.style.background = ok ? 'rgba(255,213,79,0.55)' : 'rgba(255,100,100,0.4)';
+      showTip(ok ? '✅ 已复制' : '❌ 复制失败，请长按密码手动复制', ok);
+      setTimeout(function () { el.style.background = ''; }, 1000);
+    }
+    function showTip(msg, ok) {
+      var t = document.getElementById('copyTip');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'copyTip';
+        t.style.cssText = 'position:fixed;top:14px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:8px;font-size:15px;z-index:99999;box-shadow:0 2px 10px rgba(0,0,0,.35);color:#fff;text-align:center;';
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.style.background = ok ? '#3a8a3a' : '#c62828';
+      t.style.display = 'block';
+      clearTimeout(t._timer);
+      t._timer = setTimeout(function () { t.style.display = 'none'; }, 1500);
     }
 
     // ---------- API ----------
@@ -389,6 +407,9 @@
             loadState();
           };
         });
+        availBox.querySelectorAll('code').forEach(c => {
+          c.onclick = () => copyPwd(c.textContent, c);
+        });
       }
       // 已用密码表
       const usedBox = document.getElementById('usedTableBox');
@@ -406,6 +427,9 @@
             <td>${u.expiresAtStr}</td>
             <td>${fmtRemain(u.remainSec)}</td>
           </tr>`).join('') + '</tbody></table>';
+        usedBox.querySelectorAll('code').forEach(c => {
+          c.onclick = () => copyPwd(c.textContent, c);
+        });
       }
     }
 
