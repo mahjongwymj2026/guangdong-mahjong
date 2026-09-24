@@ -100,6 +100,15 @@ Room.prototype.isEmpty = function () {
   return true;
 };
 
+// 是否还有在线真人（非机器人）
+Room.prototype.hasRealPlayer = function () {
+  for (var i = 0; i < 4; i++) {
+    var s = this.seats[i];
+    if (s && !s.isBot && s.connected) return true;
+  }
+  return false;
+};
+
 Room.prototype.seatOf = function (sessionId) {
   for (var i = 0; i < 4; i++) {
     if (this.seats[i] && this.seats[i].sessionId === sessionId) return i;
@@ -679,6 +688,12 @@ Room.prototype.markDisconnected = function (sessionId) {
   if (this.ownerSessionId === sessionId) {
     this.ownerSessionId = this._findNextOwner(sessionId);
   }
+  // 情况2：还有其他在线真人 → 断线者立即托管（不等 2 次超时）
+  if (this.hasRealPlayer() && this.status === 'playing') {
+    this.takenOver[seat] = true;
+    this._clearAutoTimerForSeat(seat);
+    this._rearmForSeat(seat);   // 启动机器人定时器（1.2s 后代出/代 pass）
+  }
   this.broadcastRoomUpdate();
 };
 
@@ -948,10 +963,23 @@ RoomManager.prototype.leaveRoom = function (sessionId) {
 RoomManager.prototype.markDisconnected = function (sessionId) {
   var entry = this.sessionRoom.get(sessionId);
   if (!entry) return;
-  entry.room.markDisconnected(sessionId);
-  if (entry.room.isEmpty()) {
-    entry.room._dispose();
-    this.rooms.delete(entry.room.roomId);
+  var room = entry.room;
+  var self = this;
+  room.markDisconnected(sessionId);
+  // 情况1：无在线真人 → 立即销毁房间（就当玩单机，新建房再玩）
+  if (!room.hasRealPlayer()) {
+    room._dispose();
+    room.seats.forEach(function (s) {
+      if (s && s.sessionId) self.sessionRoom.delete(s.sessionId);
+    });
+    this.rooms.delete(room.roomId);
+    this.sessionRoom.delete(sessionId);
+    return;
+  }
+  // 情况2：还有在线真人 → 座位保留（takenOver=true），映射保留供重连
+  if (room.isEmpty()) {
+    room._dispose();
+    this.rooms.delete(room.roomId);
     this.sessionRoom.delete(sessionId);
   }
 };
