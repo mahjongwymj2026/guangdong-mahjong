@@ -109,6 +109,43 @@ Room.prototype.hasRealPlayer = function () {
   return false;
 };
 
+// 房主卡是否仍有效（未到期）。有效卡的空房需保留，等玩家用房号回来
+Room.prototype.hasValidCard = function () {
+  return !this.expired && !!this.cardExpiry && this.cardExpiry > Date.now();
+};
+
+// 除指定真人外，是否还有其他在线真人
+Room.prototype._hasOtherRealPlayer = function (excludeSessionId) {
+  for (var i = 0; i < 4; i++) {
+    var s = this.seats[i];
+    if (s && !s.isBot && s.connected && s.sessionId !== excludeSessionId) return true;
+  }
+  return false;
+};
+
+// 最后一个真人离开后：重置为全新空房
+// 所有座位清空（含机器人）、对局状态复位、积分重置、房主清空；
+// 房间设置（底分/总分）与房主卡倒计时保留，玩家用房号回来可重新加机器人开局
+Room.prototype._resetToEmpty = function () {
+  this._clearAllAutoTimers();
+  this.deadlines = { discard: 0, claim: 0 };
+  this._passingSeats = {};
+  this._huWinners = null;
+  this.seats = [null, null, null, null];
+  this.ownerSessionId = null;
+  this.status = 'waiting';
+  this.timeoutCounts = [0, 0, 0, 0];
+  this.takenOver = [false, false, false, false];
+  this.botSeq = 0;
+  this.engine.reset();           // phase='idle'、endData=null、积分回到初始分
+  this.lastActivity = Date.now();
+  // 房卡恰好在打牌期间到点（待关闭）：房间已空，立即走到期销毁
+  if (this._expirePending) {
+    this._expirePending = false;
+    this._expireRoom();
+  }
+};
+
 Room.prototype.seatOf = function (sessionId) {
   for (var i = 0; i < 4; i++) {
     if (this.seats[i] && this.seats[i].sessionId === sessionId) return i;
@@ -263,6 +300,11 @@ Room.prototype._doTakeSeat = function (sessionId, seatIdx) {
 Room.prototype._doLeave = function (sessionId) {
   var seat = this.seatOf(sessionId);
   if (seat < 0) return { ok: true };
+  // 自己是房内最后一个真人 → 重置为全新空房（含机器人全清），房号保留可回来重开
+  if (!this._hasOtherRealPlayer(sessionId)) {
+    this._resetToEmpty();
+    return { ok: true };
+  }
   // 先清这个座位的 timer（防止孤立定时器触发到 null seat 上）
   this._clearAutoTimerForSeat(seat);
   if (this.ownerSessionId === sessionId) {
@@ -697,34 +739,9 @@ Room.prototype.markDisconnected = function (sessionId) {
     }
     this.broadcastRoomUpdate();
   } else {
-    // 情况1：无在线真人 → 结束本局，清空座位，房间保留（可用房号回来）
-    this._clearAllAutoTimers();
-    this.deadlines = { discard: 0, claim: 0 };
-    if (this.status === 'playing') {
-      // 回滚到本局开始前积分
-      if (this.engine.preRoundPoints) {
-        for (var i = 0; i < 4; i++) {
-          if (this.engine.preRoundPoints[i] !== undefined) {
-            this.engine.players[i].points = this.engine.preRoundPoints[i];
-          }
-        }
-      }
-      this.engine.ended = true;
-      this.engine.phase = 'end';
-      this.engine.endData = {
-        aborted: true, draw: true, name: '玩家断线',
-        scores: [0, 0, 0, 0],
-        points: this.engine.players.map(function (pl) { return pl.points; }),
-        hands: this.engine.players.map(function (pl, i) { return this.engine.evalHandFor(i); }, this),
-        melds: this.engine.players.map(function (pl) { return pl.melds.slice(); }),
-        pendingScores: []
-      };
-      this.status = 'waiting';
-      this.broadcastEvent(EVT.ROUND_END, { aborted: true });
-    }
-    // 清空座位（房号还能用，回来坐同一位置）
-    this.seats[seat] = null;
-    this.broadcastRoomUpdate();
+    // 情况1：无在线真人 → 重置为全新空房（所有座位清空，含机器人）
+    // 房间设置与房主卡保留，玩家用房号回来重新加机器人开局，不再弹"本局已中止"
+    this._resetToEmpty();
   }
 };
 
@@ -986,8 +1003,8 @@ RoomManager.prototype.leaveRoom = function (sessionId) {
   var room = entry.room;
   room._doLeave(sessionId);
   this.sessionRoom.delete(sessionId);
-  // 房间空 → 清理
-  if (room.isEmpty()) { room._dispose(); this.rooms.delete(room.roomId); }
+  // 房间空：房主卡仍有效则保留（用房号还能回来重开）；无卡空房才销毁
+  if (room.isEmpty() && !room.hasValidCard()) { room._dispose(); this.rooms.delete(room.roomId); }
   return { ok: true };
 };
 
@@ -996,12 +1013,12 @@ RoomManager.prototype.markDisconnected = function (sessionId) {
   if (!entry) return;
   var room = entry.room;
   room.markDisconnected(sessionId);
-  // 座位被清空（1真人断线）→ 清理 sessionRoom 映射，房间保留（机器人维持）
+  // 座位被清空（最后真人断线，房间已重置为空房）→ 清理 sessionRoom 映射
   if (room.seatOf(sessionId) < 0) {
     this.sessionRoom.delete(sessionId);
   }
-  // 全空（无机器人维持）→ 销毁
-  if (room.isEmpty()) {
+  // 空房：房主卡仍有效则保留（用房号还能回来重开）；无卡空房才销毁
+  if (room.isEmpty() && !room.hasValidCard()) {
     room._dispose();
     this.rooms.delete(room.roomId);
     this.sessionRoom.delete(sessionId);
@@ -1026,6 +1043,8 @@ RoomManager.prototype.cleanupIdle = function () {
   var self = this;
   var toDel = [];
   this.rooms.forEach(function (room, id) {
+    // 房主卡仍有效：空房也保留（玩家可能用房号回来重开），到期由卡定时器负责销毁
+    if (room.hasValidCard()) return;
     if (room.isEmpty() || (now - room.lastActivity > 3600000 && !room.seats.some(function (s) { return s && s.connected; }))) {
       toDel.push(id);
     }
