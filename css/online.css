@@ -435,8 +435,17 @@
 
   /* 其他三家牌统一尺寸（以左家为标准） */
   .mj-back { height: 3vw; width: 2.2vw; }
-  .pond img { height: 3.4vw; }  /* 三家弃牌统一 3.4vw */
-  .left-melds img, .right-melds img, .top-melds img { height: 3.6vw; }  /* 三家副露统一 3.6vw */
+  /* 三家弃牌统一 4vw */
+  .pond img { height: 4vw; }
+  /* 三家副露统一 4vw */
+  .left-melds img, .right-melds img, .top-melds img { height: 4vw; }
+  .left-melds .meld, .right-melds .meld { width: 4vw; }
+  .top-melds .meld { width: max-content; }
+  /* 三家副露组间距 0.2vw，组内牌无间距 */
+  .left-melds, .right-melds, .top-melds { gap: 0.2vw !important; }
+  .left-melds .meld .tiles-row, .right-melds .meld .tiles-row, .top-melds .meld .tiles-row { gap: 0; }
+  .left-melds .meld img + img, .right-melds .meld img + img { margin-top: -1vw; }
+  .top-melds .meld img + img { margin-left: 0; }
 
   /* 左家整体上移到返回按钮下面 */
   .seat-left {
