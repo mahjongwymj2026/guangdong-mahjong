@@ -435,8 +435,10 @@
 
   /* 其他三家牌统一尺寸（以左家为标准） */
   .mj-back { height: 3vw; width: 2.2vw; }
-  /* 三家弃牌统一 4vw */
+  /* 三家弃牌统一 4vw（#id 写法压过 game.css 里带 id 的旧 3.4vh 规则） */
   .pond img { height: 4vw; }
+  #leftPond img, #rightPond img, #topPond img { height: 4vw; }
+  .seat-left #leftPond img, .seat-right #rightPond img { height: 4vw; }
   /* 三家副露统一 4vw */
   .left-melds img, .right-melds img, .top-melds img { height: 4vw; }
   .left-melds .meld, .right-melds .meld { width: 4vw; }
