@@ -579,11 +579,16 @@ Room.prototype._doPass = function (sessionId, seat) {
   }
 
   // 普通 claim
-  var inClaim = false;
+  var claim = null;
   for (var k = 0; k < eng.claimants.length; k++) {
-    if (eng.claimants[k].seat === seat) { inClaim = true; break; }
+    if (eng.claimants[k].seat === seat) { claim = eng.claimants[k]; break; }
   }
-  if (!inClaim) return { ok: false, code: ERR.ACTION_INVALID, msg: '你不能 pass（不在候选）' };
+  if (!claim) return { ok: false, code: ERR.ACTION_INVALID, msg: '你不能 pass（不在候选）' };
+
+  // 同圈放弃记录：放弃过碰/杠的牌，同圈内不能再碰（杠不受限制，对齐 game.js）
+  if (claim.peng || claim.kong) {
+    eng.passedClaims.push({ seat: seat, tile: claim.tile });
+  }
 
   this._clearAutoTimerForSeat(seat);   // 玩家自己 pass 了，清掉代 pass 定时器
   this._passingSeats[seat] = true;
@@ -613,6 +618,11 @@ Room.prototype._doPass = function (sessionId, seat) {
 Room.prototype._doHu = function (sessionId, seat) {
   var eng = this.engine;
   if (eng.phase === 'discard' && eng.turn === seat) {
+    // 自摸胡：必须刚摸过牌（lastDraw 存在）。碰后 lastDraw=null，必须出牌不能胡；
+    // 杠后补牌 lastDraw 存在，杠爆自摸胡允许。对齐 game.js 碰后不判定胡牌。
+    if (!eng.players[seat].lastDraw) {
+      return { ok: false, code: ERR.ACTION_INVALID, msg: '碰后必须出牌，摸牌后才能胡' };
+    }
     // 自摸胡
     var evalHand = eng.evalHandFor(seat);
     if (!require('../js/mahjong.js').checkWin(evalHand, eng.ghost, eng.players[seat].melds)) {
