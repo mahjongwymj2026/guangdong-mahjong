@@ -449,37 +449,48 @@ function checkAllZwords(hand, melds, ghost) {
 // 每家应付 = 番数 × 底分 / 3，赢家收 = 番数 × 底分
 // 番型优先级（从高到低，与 Excel「各种分」计分表一致）:
 // 十三幺48 = 全翻板48 > 幺九牌36 = 清对36 > 清一色24 > 对对糊12 > 普通自摸6
+// 特殊规则：碰杠过鬼牌（副露中有鬼牌）的手牌，番型最高只到对对糊
 function bestFanEx(hand, melds, ghost, isSelfDraw, isRobKong) {
-  // 十三幺 — 48（最高档，每家应付 16×底分）
-  if (check13Orphans(hand, ghost)) {
-    return { fan: 48, name: '十三幺' };
+  // 碰杠过鬼牌 → 鬼牌副露不算清一色/全翻板/字牌等高档番，最高对对糊
+  var hasGhostMeld = false;
+  if (melds) {
+    for (var mi = 0; mi < melds.length; mi++) {
+      if (melds[mi].tiles && melds[mi].tiles.indexOf(ghost) >= 0) { hasGhostMeld = true; break; }
+    }
   }
-  
-  // 全翻板 — 48（全字牌胡牌，与十三幺同档）
-  if (checkAllZwords(hand, melds, ghost)) {
-    return { fan: 48, name: '全翻板' };
+
+  if (!hasGhostMeld) {
+    // 十三幺 — 48（最高档，每家应付 16×底分）
+    if (check13Orphans(hand, ghost)) {
+      return { fan: 48, name: '十三幺' };
+    }
+
+    // 全翻板 — 48（全字牌胡牌，与十三幺同档）
+    if (checkAllZwords(hand, melds, ghost)) {
+      return { fan: 48, name: '全翻板' };
+    }
+
+    // 幺九牌 — 36（hand + melds 全部是幺九/字牌，与清对同档）
+    if (checkAllYaojiu(hand, melds, ghost)) {
+      return { fan: 36, name: '幺九牌' };
+    }
+
+    // 清对 = 清一色 + 对对糊 — 36
+    if (checkAllPungs(hand, ghost) && checkPure(hand, melds, ghost)) {
+      return { fan: 36, name: '清对' };
+    }
+
+    // 清一色 — 24
+    if (checkPure(hand, melds, ghost)) {
+      return { fan: 24, name: '清一色' };
+    }
   }
-  
-  // 幺九牌 — 36（hand + melds 全部是幺九/字牌，与清对同档）
-  if (checkAllYaojiu(hand, melds, ghost)) {
-    return { fan: 36, name: '幺九牌' };
-  }
-  
-  // 清对 = 清一色 + 对对糊 — 36
-  if (checkAllPungs(hand, ghost) && checkPure(hand, melds, ghost)) {
-    return { fan: 36, name: '清对' };
-  }
-  
-  // 清一色 — 24
-  if (checkPure(hand, melds, ghost)) {
-    return { fan: 24, name: '清一色' };
-  }
-  
+
   // 对对糊（全刻子+将）— 12
   if (checkAllPungs(hand, ghost)) {
     return { fan: 12, name: '对对糊' };
   }
-  
+
   // 基础胡型 — 6：按胡牌方式命名（抢杠胡 / 自摸；规则只允许自摸与抢杠胡）
   if (isRobKong) return { fan: 6, name: '抢杠胡' };
   if (isSelfDraw) return { fan: 6, name: '普通自摸' };
@@ -506,7 +517,7 @@ function checkKongs(hand, lastDraw, ghost) {
   // 公杠：已碰的牌+摸到第4张（lastDraw为刚摸到的牌）
   
   Object.keys(counts).forEach(function (t) {
-    if (t === ghost) return; // 鬼牌不能杠
+    // 鬼牌也可杠（按普通杠算钱；但碰杠过鬼牌的手牌番型受限，见 bestFanEx）
     var c = counts[t];
     if (c >= 4) {
       kongs.push({ kind: 'ag', tile: t }); // 暗杠
@@ -516,8 +527,8 @@ function checkKongs(hand, lastDraw, ghost) {
     }
   });
   
-  // 明杠：别人打出的牌+手里3张
-  if (lastDraw && counts[lastDraw] >= 3 && lastDraw !== ghost) {
+  // 明杠：别人打出的牌+手里3张（鬼牌也允许明杠）
+  if (lastDraw && counts[lastDraw] >= 3) {
     kongs.push({ kind: 'mg', tile: lastDraw });
   }
   

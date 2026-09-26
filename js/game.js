@@ -778,8 +778,8 @@ var game = {
     var kongs = window.mj.checkKongs(fullHand, this.lastDraw, this.ghost).filter(function(k) {
       return k.kind === 'ag';
     });
-    // 公杠：已碰的牌 + 刚摸到第 4 张
-    if (this.lastDraw && this.lastDraw !== this.ghost) {
+    // 公杠：已碰的牌 + 刚摸到第 4 张（鬼牌也能补公杠）
+    if (this.lastDraw) {
       var hasPeng = p.melds.some(function(m) { return m.type === 'peng' && m.tiles[0] === this.lastDraw; }, this);
       if (hasPeng) kongs.push({ kind: 'bg', tile: this.lastDraw });
     }
@@ -935,10 +935,11 @@ var game = {
       var c = { seat: i, peng: false, kong: false, kind: null, tile: tile, from: fromSeat };
       // 规则：只能自摸或抢杠胡，别人打出的普通牌只能碰/明杠，不能胡
       // 同圈放弃过该牌 → 不能再碰（杠不受影响）
+      // 鬼牌打出来与普通牌一样可被碰/杠（番型限制在 bestFanEx 处理）
       var passedPeng = this.passedClaims.some(function(pc) { return pc.seat === i && pc.tile === tile; });
-      if (!passedPeng && tile !== this.ghost && window.mj.canPeng(evalHand, tile, this.ghost)) c.peng = true;
+      if (!passedPeng && window.mj.canPeng(evalHand, tile, this.ghost)) c.peng = true;
       var cnt = evalHand.filter(function(t) { return t === tile; }).length;
-      if (cnt >= 3 && tile !== this.ghost) { c.kong = true; c.kind = 'mg'; }
+      if (cnt >= 3) { c.kong = true; c.kind = 'mg'; }
       if (c.peng || c.kong) res.push(c);
     }
     return res;

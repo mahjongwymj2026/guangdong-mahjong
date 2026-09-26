@@ -536,12 +536,13 @@ MahjongEngine.prototype.getClaimants = function (tile, fromSeat) {
     var evalHand = this.evalHandFor(i);
     var c = { seat: i, peng: false, kong: false, kind: null, tile: tile, from: fromSeat };
     // 同圈放弃过该牌的碰 → 不能再碰（杠不受此限制）
+    // 鬼牌打出来与普通牌一样可被碰/杠（番型限制在 bestFanEx 处理）
     var passedPeng = this.passedClaims.some(function (pc) {
       return pc.seat === i && pc.tile === tile;
     });
-    if (!passedPeng && tile !== this.ghost && mj.canPeng(evalHand, tile, this.ghost)) c.peng = true;
+    if (!passedPeng && mj.canPeng(evalHand, tile, this.ghost)) c.peng = true;
     var cnt = evalHand.filter(function (t) { return t === tile; }).length;
-    if (cnt >= 3 && tile !== this.ghost) { c.kong = true; c.kind = 'mg'; }
+    if (cnt >= 3) { c.kong = true; c.kind = 'mg'; }
     if (c.peng || c.kong) res.push(c);
   }
   return res;
@@ -727,8 +728,8 @@ MahjongEngine.prototype.selfKongsFor = function (seat) {
   var kongs = mj.checkKongs(fullHand, p.lastDraw, this.ghost).filter(function (k) {
     return k.kind === 'ag';
   });
-  // 公杠：已碰的牌 + 刚摸到第 4 张
-  if (p.lastDraw && p.lastDraw !== this.ghost) {
+  // 公杠：已碰的牌 + 刚摸到第 4 张（鬼牌也能补公杠）
+  if (p.lastDraw) {
     var hasPeng = p.melds.some(function (m) {
       return m.type === 'peng' && m.tiles[0] === p.lastDraw;
     });
