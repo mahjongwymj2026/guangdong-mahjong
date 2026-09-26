@@ -585,9 +585,10 @@ Room.prototype._doPass = function (sessionId, seat) {
   }
   if (!claim) return { ok: false, code: ERR.ACTION_INVALID, msg: '你不能 pass（不在候选）' };
 
-  // 同圈放弃记录：放弃过碰/杠的牌，同圈内不能再碰（杠不受限制，对齐 game.js）
+  // 同圈放弃记录：放弃过碰/杠的牌，同圈内不能再碰（杠不受此限制，对齐 game.js）
+  // 记录带上出牌者（claim.from）：这张牌的"一圈"以出牌者再次摸牌为界
   if (claim.peng || claim.kong) {
-    eng.passedClaims.push({ seat: seat, tile: claim.tile });
+    eng.passedClaims.push({ seat: seat, tile: claim.tile, from: claim.from });
   }
 
   this._clearAutoTimerForSeat(seat);   // 玩家自己 pass 了，清掉代 pass 定时器
@@ -827,9 +828,10 @@ Room.prototype._armDiscardTimer = function (seat) {
 
     if (isBot) {
       // 机器人AI决策
-      // 1. 先检查能不能自摸胡
+      // 1. 先检查能不能自摸胡（与真人一致：必须刚摸过牌 lastDraw 存在；
+      //    碰后 lastDraw=null 不能胡，杠后补牌 lastDraw 存在，杠爆允许）
       var evalHand = eng.evalHandFor(seat);
-      if (mj.checkWin(evalHand, eng.ghost, eng.players[seat].melds)) {
+      if (p.lastDraw && mj.checkWin(evalHand, eng.ghost, eng.players[seat].melds)) {
         self.deadlines = { discard: 0, claim: 0 };
         eng.endRound(seat, { isSelfDraw: true });
         self.broadcastEvent(EVT.HU, { seat: seat, isSelfDraw: true, endData: eng.endData });

@@ -35,8 +35,7 @@ MahjongEngine.prototype.reset = function () {
   this.roundNum = 0;
   this.lastDiscard = null;     // { seat, tile }
   this.claimants = [];         // 可 claim 的座位
-  this.passedClaims = [];      // 同圈放弃：[{seat,tile}]
-  this.roundStartSeat = -1;
+  this.passedClaims = [];      // 同圈放弃：[{seat,tile,from}]
   this.pendingScores = [];     // 杠分暂记 [{seat,score,kind,tile,fromSeat,text}]
   this.kongChain = [];         // 本串杠链 [{kind,seat,fromSeat}]
   this.lastClaimForBao = null; // { provider, seat, src }
@@ -65,7 +64,6 @@ MahjongEngine.prototype.startRound = function () {
   this.lastDiscard = null;
   this.claimants = [];
   this.passedClaims = [];
-  this.roundStartSeat = -1;
   this.pendingScores = [];
   this.kongChain = [];
   this.lastClaimForBao = null;
@@ -131,12 +129,10 @@ MahjongEngine.prototype.nextTurn = function () {
     this.huangzhuang();
     return;
   }
-  // 同圈放弃记录：绕一圈回到 roundStartSeat 时清空
-  if (this.roundStartSeat === -1) {
-    this.roundStartSeat = this.turn;
-  } else if (this.turn === this.roundStartSeat) {
-    this.passedClaims = [];
-  }
+  // 同圈放弃记录：按"出牌者"独立计算一圈。轮到他再次摸牌（nextTurn 到他）时，
+  // 仅他打出的那张牌的放弃记录过期；其他出牌者的记录不受影响
+  var nturn = this.turn;
+  this.passedClaims = this.passedClaims.filter(function (pc) { return pc.from !== nturn; });
   this.phase = 'discard';
   this.claimants = [];
   this.drawTile(this.turn);
