@@ -435,14 +435,14 @@
 
   /* 其他三家牌统一尺寸（以左家为标准） */
   .mj-back { height: 3vw; width: 2.2vw; }
-  /* 三家弃牌统一 4vw（#id 写法压过 game.css 里带 id 的旧 3.4vh 规则） */
-  .pond img { height: 4vw; }
-  #leftPond img, #rightPond img, #topPond img { height: 4vw; }
-  .seat-left #leftPond img, .seat-right #rightPond img { height: 4vw; }
+  /* 三家弃牌统一 4vw（!important 压过 game.css 里所有旧 3.4vh 规则） */
+  .pond img { height: 4vw !important; }
+  #leftPond img, #rightPond img, #topPond img { height: 4vw !important; }
+  .seat-left #leftPond img, .seat-right #rightPond img { height: 4vw !important; }
   /* 三家副露统一 4vw */
-  .left-melds img, .right-melds img, .top-melds img { height: 4vw; }
-  .left-melds .meld, .right-melds .meld { width: 4vw; }
-  .top-melds .meld { width: max-content; }
+  .left-melds img, .right-melds img, .top-melds img { height: 4vw !important; }
+  .left-melds .meld, .right-melds .meld { width: 4vw !important; }
+  .top-melds .meld { width: max-content !important; }
   /* 三家副露组间距 0.2vw，组内牌无间距 */
   .left-melds, .right-melds, .top-melds { gap: 0.2vw !important; }
   .left-melds .meld .tiles-row, .right-melds .meld .tiles-row, .top-melds .meld .tiles-row { gap: 0; }
