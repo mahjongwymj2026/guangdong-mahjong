@@ -437,7 +437,10 @@
   .mj-back { height: 3vw; width: 2.2vw; }
   /* ===== 左家：弃牌放大一倍、副露改小1/3、整体上移 ===== */
   /* 左家弃牌：3.4vh → 6.8vh（放大一倍），重叠间距同步放大 */
-  .seat-left #leftPond img { height: 6.8vh !important; margin-bottom: -2.86vh !important; }
+  /* 左家弃牌：6.8vh 放大一倍，但从下往上排（column-reverse），底部对齐不超过我手牌横线 */
+  .seat-left .pond-left { flex-direction: column-reverse !important; justify-content: flex-start !important; align-self: flex-end !important; }
+  .seat-left #leftPond img { height: 6.8vh !important; margin-bottom: 0 !important; margin-top: -2.86vh !important; }
+  .seat-left #leftPond img:first-child { margin-top: 0 !important; }
   /* 左家副露：3.4vh → 2.27vh（改小1/3），melds 网格/meld宽度/重叠间距同步 */
   .left-melds { grid-template-columns: repeat(2, 2.27vh) !important; gap: 0.67vh 0.33vh !important; }
   .left-melds .meld { width: 2.27vh !important; }
@@ -462,7 +465,7 @@
   .seat-left .left-body { gap: 0; }
   .seat-left .left-back-col { margin-left: 0; }
   .seat-right .right-body { gap: 0; }
-  .seat-right .pond-right { margin-right: 0.9vw; }
+  .seat-right .pond-right { margin-right: 0.9vw; gap: 0 !important; }  /* 右家弃牌间距改0 */
   .seat-right .right-back-col { margin-right: 0; }
   .seat-top .top-main { gap: 0; }
   .top-pond { margin: 0; }
