@@ -435,31 +435,31 @@
 
   /* 其他三家牌统一尺寸（以左家为标准） */
   .mj-back { height: 3vw; width: 2.2vw; }
-  /* 三家弃牌统一 4vw（!important 压过 game.css 里所有旧 3.4vh 规则） */
-  .pond img { height: 4vw !important; }
-  #leftPond img, #rightPond img, #topPond img { height: 4vw !important; }
-  .seat-left #leftPond img, .seat-right #rightPond img { height: 4vw !important; }
-  /* 三家副露统一 4vw */
-  .left-melds img, .right-melds img, .top-melds img { height: 4vw !important; }
-  .left-melds .meld, .right-melds .meld { width: 4vw !important; }
+  /* ===== 左家：弃牌放大一倍、副露改小1/3、整体上移 ===== */
+  /* 左家弃牌：3.4vh → 6.8vh（放大一倍），重叠间距同步放大 */
+  .seat-left #leftPond img { height: 6.8vh !important; margin-bottom: -2.86vh !important; }
+  /* 左家副露：3.4vh → 2.27vh（改小1/3），melds 网格/meld宽度/重叠间距同步 */
+  .left-melds { grid-template-columns: repeat(2, 2.27vh) !important; gap: 0.67vh 0.33vh !important; }
+  .left-melds .meld { width: 2.27vh !important; }
+  .left-melds img { height: 2.27vh !important; }
+  .left-melds .meld img + img { margin-top: -0.57vh !important; }
+  /* 左家整体上移：top 4vw → 1.2vw，碰杠后副露不遮挡我的副露区 */
+  .seat-left { top: 1.2vw !important; }
+  .seat-left .pond-left { margin-left: 0.9vw !important; max-height: none !important; }
+  /* ===== 右家、对家：保持 4vw 不动 ===== */
+  #rightPond img, #topPond img { height: 4vw !important; }
+  .seat-right #rightPond img { height: 4vw !important; }
+  .right-melds img, .top-melds img { height: 4vw !important; }
+  .right-melds .meld { width: 4vw !important; }
   .top-melds .meld { width: max-content !important; }
-  /* 三家副露组间距 0.2vw，组内牌无间距 */
-  .left-melds, .right-melds, .top-melds { gap: 0.2vw !important; }
-  .left-melds .meld .tiles-row, .right-melds .meld .tiles-row, .top-melds .meld .tiles-row { gap: 0; }
-  .left-melds .meld img + img, .right-melds .meld img + img { margin-top: -1vw; }
+  /* 右家、对家副露组间距 0.2vw，组内牌无间距 */
+  .right-melds, .top-melds { gap: 0.2vw !important; }
+  .right-melds .meld .tiles-row, .top-melds .meld .tiles-row { gap: 0; }
+  .right-melds .meld img + img { margin-top: -1vw; }
   .top-melds .meld img + img { margin-left: 0; }
-
-  /* 左家整体上移到返回按钮下面 */
-  .seat-left {
-    top: 4vw;
-    left: 1.5vw;
-    bottom: auto;
-    transform: none;
-  }
   /* 三家 gap/margin 清零，但旋转牌留最小间距避免重叠 */
   .pond { gap: 0; }
   .seat-left .left-body { gap: 0; }
-  .seat-left .pond-left { margin-left: 0.9vw; }  /* 旋转牌避免重叠的最小间距 */
   .seat-left .left-back-col { margin-left: 0; }
   .seat-right .right-body { gap: 0; }
   .seat-right .pond-right { margin-right: 0.9vw; }
