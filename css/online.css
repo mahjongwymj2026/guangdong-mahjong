@@ -518,17 +518,17 @@
     gap: 0 !important;
   }
 
-  /* 手牌副露竖带：纵向排列，副露在下端（bottom），手牌在上端（top） */
+  /* 手牌副露竖带：纵向排列，手牌在上端（位置固定），副露用 margin-top:auto 压到底 */
   .seat-right .right-strip {
     display: flex !important;
     flex-direction: column !important;
     align-self: stretch !important;
-    justify-content: flex-end !important;
+    justify-content: flex-start !important;
     height: 100% !important;
     position: relative !important;
   }
 
-  /* 副露：竖带下端，碰第1组在最下方，再碰往上长（column-reverse） */
+  /* 副露：竖带最下端，碰第1组在最下方（槽位1），再碰往上长（column-reverse） */
   .seat-right .right-melds {
     position: relative !important;
     right: auto !important;
@@ -537,7 +537,7 @@
     display: flex !important;
     flex-direction: column-reverse !important;
     gap: 0.5vw !important;
-    margin: 0 !important;
+    margin: auto 0 0 0 !important;  /* top:auto 压到最底 */
     width: 6.8vh !important;
     align-self: flex-end !important;
   }
