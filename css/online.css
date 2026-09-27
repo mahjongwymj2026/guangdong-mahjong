@@ -568,9 +568,9 @@
     flex-direction: row-reverse !important;
     align-items: flex-end !important;
     align-self: flex-end !important;
-    margin-right: 0.9vw !important;
+    margin-right: 0 !important;
     max-height: none !important;
-    gap: 0.1vh !important;
+    gap: 0 !important;
   }
   .seat-right .pond-col {
     display: flex !important;
