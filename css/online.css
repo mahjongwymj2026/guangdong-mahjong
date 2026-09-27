@@ -637,8 +637,7 @@
   .top-melds .warn3-tag { font-size: 1.2vw; top: -2vw; left: 0; }
   .left-melds .warn3-tag, .right-melds .warn3-tag { font-size: 1.1vw; top: -1.8vw; }
 
-  /* ghost-badge 角标大小 */
-  .ghost-badge { font-size: 1.2vw; top: -0.4vw; right: -0.4vw; }
+  /* ghost-badge 角标：用 game.css 的统一放大尺寸，不再覆盖 */
 
   /* ---------- 结算弹窗 3 倍放大 + 宽度 2/3 + 滚动 ---------- */
   .modal.end-modal {

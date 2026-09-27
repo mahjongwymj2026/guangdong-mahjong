@@ -302,6 +302,7 @@
   height: 13vh;
   border-radius: 1.2vh;
 }
+.ghost-timer.ghost-frame::after { display: none !important; }
 .ghost-timer-num {
   font-size: 7vh;
   font-weight: 900;
@@ -433,15 +434,15 @@
 }
 .ghost-badge {
   position: absolute;
-  top: -1vh; right: -1vh;
-  width: 3.8vh; height: 3.8vh;
+  top: -1.4vh; right: -1.4vh;
+  width: 5.2vh; height: 5.2vh;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #ff6b76, #d40022 72%);
   color: #ffe08a;
-  font-size: 2.3vh; font-weight: 900;
-  line-height: 3.8vh; text-align: center;
-  border: 0.28vh solid #ffd34d;
-  box-shadow: 0 0 1vh rgba(255, 60, 70, 0.85);
+  font-size: 3.2vh; font-weight: 900;
+  line-height: 5.2vh; text-align: center;
+  border: 0.32vh solid #ffd34d;
+  box-shadow: 0 0 1.2vh rgba(255, 60, 70, 0.9);
   z-index: 2;
   pointer-events: none;
 }
