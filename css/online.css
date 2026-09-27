@@ -492,29 +492,91 @@
     justify-self: center !important;
     align-self: center !important;
   }
-  /* ===== 右家、对家：保持 4vw 不动 ===== */
-  #rightPond img, #topPond img { height: 4vw !important; }
-  .seat-right #rightPond img { height: 4vw !important; }
-  .right-melds img, .top-melds img { height: 4vw !important; }
-  .right-melds .meld { width: 4vw !important; }
-  .top-melds .meld { width: max-content !important; }
-  /* 右家、对家副露组间距 0.2vw，组内牌无间距 */
-  .right-melds, .top-melds { gap: 0.2vw !important; }
-  .right-melds .meld .tiles-row, .top-melds .meld .tiles-row { gap: 0; }
-  .right-melds .meld img + img { margin-top: -1vw; }
-  .top-melds .meld img + img { margin-left: 0; }
-  /* 三家 gap/margin 清零，但旋转牌留最小间距避免重叠 */
-  .pond { gap: 0; }
-  .seat-left .left-body { gap: 0; }
-  .seat-left .left-back-col { margin-left: 0; }
-  .seat-right .right-body { gap: 0; }
-  .seat-right .pond-right { margin-right: 0.9vw; gap: 0 !important; }  /* 右家弃牌间距改0 */
-  .seat-right .right-back-col { margin-right: 0; }
-  .seat-top .top-main { gap: 0; }
-  .top-pond { margin: 0; }
-  .seat-right { gap: 0.9vw; }  /* 右家：副露与手牌垂直方向避免重叠（左家已在上方横向块定义） */
+  /* ===== 右家：手牌最右不动，副露绝对定位在手牌左边，弃牌两列×8张 ===== */
+  /* 座位容器：纵向固定上下边界 */
+  .seat-right {
+    top: 2vw !important;
+    bottom: 9vw !important;
+    right: 1.5vh !important;
+    transform: none !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 0 !important;
+  }
+  /* 座位信息悬浮顶外 */
+  .seat-right .seat-info { position: absolute !important; top: -1.8vw !important; right: 0 !important; z-index: 3; }
 
-  /* 左右家手牌/弃牌/副露（竖排旋转） */
+  /* right-body 横向：弃牌(grid) | 手牌(最右)，保持原样 */
+  .seat-right .right-body {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    gap: 0 !important;
+  }
+
+  /* 副露：绝对定位脱流，钉在座位右上角（与手牌同一条竖带）。
+     碰1个出1组、碰4个出4组，从屏幕上方往下排，不挤占手牌/弃牌 */
+  .seat-right .right-melds {
+    position: absolute !important;
+    right: 3.9vw !important;  /* 手牌列宽3vw + 间距0.9vw，副露贴手牌左边 */
+    top: 0 !important;
+    z-index: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5vw !important;
+    margin: 0 !important;
+    width: 6.8vh !important;
+  }
+  .seat-right .right-melds .meld { width: 6.8vh !important; }
+  .seat-right .right-melds img { height: 6.8vh !important; }
+  .seat-right .right-melds .meld img + img { margin-top: -1.7vh !important; }
+  .seat-right .right-melds .meld .tiles-row { align-items: center !important; }
+
+  /* 手牌列：最右贴边，column-reverse（从下往上），位置不动 */
+  .seat-right .right-back-col {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    gap: 0 !important;
+    max-height: none !important;
+    margin-right: 0 !important;
+  }
+  .seat-right .right-back-col .mj-back {
+    height: 3vw !important;
+    margin-bottom: -0.8vw !important;
+  }
+  .seat-right .right-back-col .mj-back:last-child { margin-bottom: 0 !important; }
+
+  /* 弃牌：网格两列，每列8张；牌=左家弃牌4vw，间距0，列间0.1vh；
+     列1先满（靠手牌/副露侧），列2往屏幕中间排 */
+  .seat-right .pond-right {
+    display: grid !important;
+    grid-template-rows: repeat(8, 3vw) !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: 4vw !important;
+    row-gap: 0 !important;
+    column-gap: 0.1vh !important;
+    align-self: flex-end !important;
+    margin-right: 0.9vw !important;
+    max-height: none !important;
+  }
+  .seat-right #rightPond img {
+    height: 4vw !important;
+    margin: 0 !important;
+    justify-self: center !important;
+    align-self: center !important;
+  }
+
+  /* 对家保持 4vw 不动 */
+  #topPond img { height: 4vw !important; }
+  .top-melds img { height: 4vw !important; }
+  .top-melds .meld { width: max-content !important; }
+  .top-melds { gap: 0.2vw !important; }
+  .top-melds .meld .tiles-row { gap: 0; }
+  .top-melds .meld img + img { margin-left: 0; }
+  .top-pond { margin: 0; }
+  .seat-top .top-main { gap: 0; }
+
+  /* 左右家手牌牌背（竖排旋转） */
   .seat-left .left-back-col .mj-back { height: 3vw; margin-bottom: -0.8vw; }
   .seat-left .left-back-col .mj-back:last-child { margin-bottom: 0 !important; }
   .seat-right .right-back-col .mj-back { height: 3vw; margin-bottom: -0.8vw; }
