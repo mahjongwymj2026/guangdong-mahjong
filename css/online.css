@@ -578,10 +578,12 @@
     max-height: none !important;
     overflow: visible !important;
   }
-  .seat-right #rightPond img {
-    height: 4vw !important;
-    margin: 0 !important;
-  }
+  /* 弃牌列内：旋转90°的牌布局占位4vw高但视觉只占3vw（牌宽），
+     用 -1vw 负边距抵消，实现牌边挨牌边（0间距、不堆叠） */
+  .seat-right .pond-col { gap: 0 !important; }
+  .seat-right #rightPond img { height: 4vw !important; }
+  .seat-right .pond-col img { margin: 0 0 -1vw 0 !important; }
+  .seat-right .pond-col img:first-child { margin-bottom: 0 !important; }
 
   /* 对家保持 4vw 不动 */
   #topPond img { height: 4vw !important; }
