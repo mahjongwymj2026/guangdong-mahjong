@@ -561,10 +561,11 @@
   }
   .seat-right .right-back-col .mj-back:last-child { margin-bottom: 0 !important; }
 
-  /* 弃牌：flex两列，每列8张，column-reverse（从下往上排），牌=左家弃牌4vw，间距0 */
+  /* 弃牌：flex两列，每列8张，column-reverse（从下往上排），牌=左家弃牌4vw，间距0；
+     row-reverse：第1列（先满）显示在靠手牌一侧，第2列靠屏幕中间 */
   .seat-right .pond-right {
     display: flex !important;
-    flex-direction: row !important;
+    flex-direction: row-reverse !important;
     align-items: flex-end !important;
     align-self: flex-end !important;
     margin-right: 0.9vw !important;
