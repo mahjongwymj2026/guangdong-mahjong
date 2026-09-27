@@ -514,11 +514,11 @@
     gap: 0 !important;
   }
 
-  /* 副露：绝对定位脱流，钉在座位右上角（与手牌同一条竖带）。
+  /* 副露：绝对定位脱流，钉在座位右上角（right:0，与手牌同一条竖带，镜像左家）。
      碰1个出1组、碰4个出4组，从屏幕上方往下排，不挤占手牌/弃牌 */
   .seat-right .right-melds {
     position: absolute !important;
-    right: 3.9vw !important;  /* 手牌列宽3vw + 间距0.9vw，副露贴手牌左边 */
+    right: 0 !important;
     top: 0 !important;
     z-index: 2 !important;
     display: flex !important;
@@ -547,12 +547,13 @@
   .seat-right .right-back-col .mj-back:last-child { margin-bottom: 0 !important; }
 
   /* 弃牌：网格两列，每列8张；牌=左家弃牌4vw，间距0，列间0.1vh；
-     列1先满（靠手牌/副露侧），列2往屏幕中间排 */
+     direction:rtl 让列从右往左长——先满靠手牌的第1列(5)，再往屏幕中间第2列(6) */
   .seat-right .pond-right {
     display: grid !important;
     grid-template-rows: repeat(8, 3vw) !important;
     grid-auto-flow: column !important;
     grid-auto-columns: 4vw !important;
+    direction: rtl !important;
     row-gap: 0 !important;
     column-gap: 0.1vh !important;
     align-self: flex-end !important;
