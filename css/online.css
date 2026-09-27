@@ -466,22 +466,23 @@
   /* 手牌列：牌大小不动(3vw)，底部与弃牌列一起对齐红线 */
   .seat-left .left-body { gap: 0; align-items: flex-end !important; }
 
-  /* 弃牌：网格两列，每列8张；先填满靠手牌列，再往屏幕中间列；牌边挨边无堆叠 */
+  /* 弃牌：网格两列，每列8张；先填满靠手牌列(5)，再往屏幕中间列(6)；
+     牌大小=右家弃牌 4vw（旋转后视觉 4vw宽×3vw高），边挨边无堆叠 */
   .seat-left .pond-left {
     display: grid !important;
-    grid-template-rows: repeat(8, 4.2vw) !important;
+    grid-template-rows: repeat(8, 3vw) !important;
     grid-auto-flow: column !important;
-    grid-auto-columns: 5.6vw !important;
+    grid-auto-columns: 4vw !important;
     row-gap: 0 !important;
     column-gap: 0.1vh !important;
     align-self: flex-end !important;
     margin-left: 0.9vw !important;
     max-height: none !important;
   }
-  /* 牌高5.6vw（旋转后视觉宽5.6vw/高4.2vw，正好落进网格 5.6vw×4.2vw 格子）。
+  /* 牌高4vw（旋转后视觉宽4vw/高3vw，正好落进网格 4vw×3vw 格子）。
      牌盒在格内必须居中，旋转90°后视觉盒才与格子完全重合，不偏位 */
   .seat-left #leftPond img {
-    height: 5.6vw !important;
+    height: 4vw !important;
     margin: 0 !important;
     justify-self: center !important;
     align-self: center !important;
