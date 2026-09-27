@@ -592,7 +592,7 @@
     50%  { box-shadow: 0 0 0 4px #ffd54f, 0 0 24px rgba(255,213,79,1); }
     100% { box-shadow: 0 0 0 2px #ffd54f, 0 0 12px rgba(255,213,79,0.8); }
   }
-  .pond-latest { animation: pond-latest-pulse 0.6s ease-in-out 3; border-radius: 4px; }
+  .pond-latest { animation: pond-latest-pulse 0.6s ease-in-out infinite; border-radius: 4px; }
 
   /* 对家保持 4vw 不动 */
   #topPond img { height: 4vw !important; }
