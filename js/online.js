@@ -151,45 +151,38 @@
     },
     tick: function () {
       var s = online.cur;
-      var wrap = document.getElementById('turnTimer');
+      var wrap = document.getElementById('ghostTimer');
       if (!wrap) return;
-      var bar = document.getElementById('turnTimerBar');
-      var txt = document.getElementById('turnTimerText');
+      var num = document.getElementById('ghostTimerNum');
       if (!s || s.phase === 'idle' || s.phase === 'end') {
         wrap.style.display = 'none';
         return;
       }
-      // 自己本局已被电脑接管：固定提示，不显示倒计时
+      // 自己本局已被电脑接管：显示"托管"
       if (s.takenOver && s.takenOver[online.mySeat]) {
         wrap.style.display = 'flex';
-        bar.style.width = '100%';
-        bar.className = 'turn-timer-bar';
-        txt.className = 'turn-timer-text taken';
-        txt.textContent = '电脑托管中';
+        num.textContent = '托管';
+        num.className = 'ghost-timer-num taken';
         return;
       }
-      var total = 0, deadline = 0, label = '', mine = false;
+      var total = 0, deadline = 0, mine = false;
       if (s.phase === 'discard' && s.turnDeadline) {
         total = DISCARD_MS;
         deadline = s.turnDeadline;
         mine = (s.turn === online.mySeat);
-        label = mine ? '轮到你出牌' : ('等待 ' + seatName(s.turn) + ' 出牌');
       } else if (s.phase === 'claim' && s.claimDeadline && s.myClaim) {
         total = CLAIM_MS;
         deadline = s.claimDeadline;
         mine = true;
-        label = '碰 / 杠 / 胡 请选择';
       }
       if (!deadline) { wrap.style.display = 'none'; return; }
       var remain = deadline - Date.now();
       if (remain < 0) remain = 0;
       var secs = Math.ceil(remain / 1000);
       wrap.style.display = 'flex';
-      bar.style.width = Math.max(0, Math.min(100, remain / total * 100)) + '%';
-      var urgent = remain <= 5000;
-      bar.className = 'turn-timer-bar' + (mine ? ' mine' : '') + (urgent ? ' urgent' : '');
-      txt.className = 'turn-timer-text' + (mine ? ' mine' : '') + (urgent ? ' urgent' : '');
-      txt.textContent = label + ' · 剩 ' + secs + ' 秒';
+      var urgent = remain <= 10000;
+      num.className = 'ghost-timer-num' + (mine ? ' mine' : '') + (urgent ? ' urgent' : '');
+      num.textContent = secs;
     }
   };
 

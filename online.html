@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>广东麻将 · 联机对战</title>
-  <link rel="stylesheet" href="css/game.css?v=132">
-  <link rel="stylesheet" href="css/online.css?v=33">
+  <link rel="stylesheet" href="css/game.css?v=133">
+  <link rel="stylesheet" href="css/online.css?v=34">
 </head>
 <body>
 
@@ -172,9 +172,14 @@
     <div class="center-area">
       <div class="compass">
         <div class="compass-core">
-          <div class="ghost-display" id="ghostDisplay" style="display:none;">
-            <div class="ghost-frame">
-              <img id="ghostImg" src="" alt="鬼牌" class="mj ghost-center">
+          <div class="ghost-row">
+            <div class="ghost-display" id="ghostDisplay" style="display:none;">
+              <div class="ghost-frame">
+                <img id="ghostImg" src="" alt="鬼牌" class="mj ghost-center">
+              </div>
+            </div>
+            <div class="ghost-timer ghost-frame" id="ghostTimer" style="display:none;">
+              <span class="ghost-timer-num" id="ghostTimerNum">30</span>
             </div>
           </div>
           <div class="turn-info" id="turnInfo"></div>
@@ -205,12 +210,7 @@
     </div>
 
     <!-- 出牌倒计时条（阶段D步骤3） -->
-    <div class="turn-timer" id="turnTimer" style="display:none;">
-      <div class="turn-timer-track">
-        <div class="turn-timer-bar" id="turnTimerBar"></div>
-      </div>
-      <div class="turn-timer-text" id="turnTimerText"></div>
-    </div>
+    <!-- 旧倒计时轨道条已删除，倒计时数字在鬼牌右侧 -->
 
     <!-- 操作按钮栏 -->
     <div class="action-bar" id="actionBar">
@@ -267,6 +267,6 @@
 
   <script src="js/mahjong.js?v=39"></script>
   <script src="js/sounds.js?v=35"></script>
-  <script src="js/online.js?v=26"></script>
+  <script src="js/online.js?v=27"></script>
 </body>
 </html>
