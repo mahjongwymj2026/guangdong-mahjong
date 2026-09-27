@@ -766,6 +766,23 @@
       var box = document.getElementById(boxId);
       if (!box) return;
       box.innerHTML = '';
+      // 右家：分两列，每列8张，列1（靠手牌）先满
+      if (boxId === 'rightPond') {
+        for (var c = 0; c < 2; c++) {
+          var col = document.createElement('div');
+          col.className = 'pond-col';
+          box.appendChild(col);
+        }
+        disp.forEach(function (t, i) {
+          var img = document.createElement('img');
+          img.className = 'mj pond-tile';
+          img.src = tileImgSrc(t);
+          img.alt = t;
+          var colIdx = i < 8 ? 0 : 1;  // 前8张进列1，后面进列2
+          box.children[colIdx].appendChild(img);
+        });
+        return;
+      }
       disp.forEach(function (t) {
         var img = document.createElement('img');
         img.className = 'mj pond-tile';

@@ -506,11 +506,11 @@
   /* 座位信息悬浮顶外 */
   .seat-right .seat-info { position: absolute !important; top: -1.8vw !important; right: 0 !important; z-index: 3; }
 
-  /* right-body 占满座位纵向高度：手牌顶部对齐、弃牌底部对齐，碰牌后互不挤占 */
+  /* right-body 横向：弃牌 | 手牌副露竖带（同一条带，副露下端、手牌上端） */
   .seat-right .right-body {
     display: flex !important;
     flex-direction: row !important;
-    align-items: flex-start !important;
+    align-items: flex-end !important;
     justify-content: flex-end !important;
     align-self: stretch !important;
     flex: 1 1 auto !important;
@@ -518,26 +518,35 @@
     gap: 0 !important;
   }
 
-  /* 副露：绝对定位脱流，钉在座位右下角（bottom:0，与手牌同一条竖带）。
-     右家与左家相反——碰第1组在屏幕下方，再碰往上长（column-reverse），
-     手牌在竖带上端向下缩短，两头永不堆叠 */
+  /* 手牌副露竖带：纵向排列，副露在下端（bottom），手牌在上端（top） */
+  .seat-right .right-strip {
+    display: flex !important;
+    flex-direction: column !important;
+    align-self: stretch !important;
+    justify-content: flex-end !important;
+    height: 100% !important;
+    position: relative !important;
+  }
+
+  /* 副露：竖带下端，碰第1组在最下方，再碰往上长（column-reverse） */
   .seat-right .right-melds {
-    position: absolute !important;
-    right: 0 !important;
-    bottom: 0 !important;
+    position: relative !important;
+    right: auto !important;
+    bottom: auto !important;
     z-index: 2 !important;
     display: flex !important;
     flex-direction: column-reverse !important;
     gap: 0.5vw !important;
     margin: 0 !important;
     width: 6.8vh !important;
+    align-self: flex-end !important;
   }
   .seat-right .right-melds .meld { width: 6.8vh !important; }
   .seat-right .right-melds img { height: 6.8vh !important; }
   .seat-right .right-melds .meld img + img { margin-top: -1.7vh !important; }
   .seat-right .right-melds .meld .tiles-row { align-items: center !important; }
 
-  /* 手牌列：最右贴边，顶部对齐，从上往下排；碰牌后从下端缩短，位置不动 */
+  /* 手牌列：竖带上端，顶部对齐，从上往下排；碰牌后从下端缩短，位置不动 */
   .seat-right .right-back-col {
     display: flex !important;
     flex-direction: column !important;
@@ -552,25 +561,26 @@
   }
   .seat-right .right-back-col .mj-back:last-child { margin-bottom: 0 !important; }
 
-  /* 弃牌：网格两列，每列8张；牌=左家弃牌4vw，间距0，列间0.1vh；
-     direction:rtl 让列从右往左长——先满靠手牌的第1列(5)，再往屏幕中间第2列(6) */
+  /* 弃牌：flex两列，每列8张，column-reverse（从下往上排），牌=左家弃牌4vw，间距0 */
   .seat-right .pond-right {
-    display: grid !important;
-    grid-template-rows: repeat(8, 3vw) !important;
-    grid-auto-flow: column !important;
-    grid-auto-columns: 4vw !important;
-    direction: rtl !important;
-    row-gap: 0 !important;
-    column-gap: 0.1vh !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
     align-self: flex-end !important;
     margin-right: 0.9vw !important;
     max-height: none !important;
+    gap: 0.1vh !important;
+  }
+  .seat-right .pond-col {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    gap: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
   .seat-right #rightPond img {
     height: 4vw !important;
     margin: 0 !important;
-    justify-self: center !important;
-    align-self: center !important;
   }
 
   /* 对家保持 4vw 不动 */
