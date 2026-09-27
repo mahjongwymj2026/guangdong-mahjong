@@ -563,16 +563,19 @@
             if (window.snd.gang) setTimeout(function () { window.snd.gang(); }, 350);
             break;
           case 'hu':
-            if (detail.isSelfDraw && window.snd.zimo) window.snd.zimo();
-            else if (window.snd.hu) window.snd.hu();
+            // 胡牌人声：普通胡喊"自摸"，特殊胡牌喊番型名（对对糊/清一色/清对/幺九/十三幺）
+            var fanName = (online.cur && online.cur.endData) ? online.cur.endData.fan : null;
+            var fanVoiceName = fanName && window.snd.FAN_VOICES ? window.snd.FAN_VOICES[fanName] : null;
+            if (fanVoiceName) {
+              if (window.snd.playVoice) window.snd.playVoice(fanVoiceName);
+            } else if (detail.isSelfDraw && window.snd.zimo) {
+              window.snd.zimo();  // 无语音文件时电子音兜底
+            } else if (window.snd.hu) {
+              window.snd.hu();
+            }
             // 鬼牌胡牌 → 闪电
             if (online.cur && online.cur.endData && online.cur.endData.winnerHasGhost) {
               triggerLightning();
-            }
-            if (online.cur && online.cur.endData && window.snd.fanVoice) {
-              setTimeout(function () {
-                if (window.snd.fanVoice) window.snd.fanVoice(online.cur.endData.fan);
-              }, 300);
             }
             break;
           default:

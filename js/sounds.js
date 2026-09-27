@@ -43,12 +43,48 @@ function tileCodeToFileName(code) {
   return '';
 }
 
-// 语音播放（HTML5 Audio, .mp3）
+// 语音缓存池：每个 mp3 只下载一次，之后从内存秒播
+var voiceCache = {};
+function getVoice(name) {
+  if (!voiceCache[name]) {
+    var audio = new Audio('sounds/' + name + '.mp3');
+    audio.preload = 'auto';
+    audio.volume = 0.8;
+    voiceCache[name] = audio;
+  }
+  return voiceCache[name];
+}
+
+// 全部语音清单（按 sounds/ 目录实际文件），进页面后预加载
+var ALL_VOICES = [
+  'wan1','wan9',
+  'tiao1','tiao2','tiao3','tiao4','tiao5','tiao6','tiao7','tiao8','tiao9',
+  'tong1','tong2','tong3','tong4','tong5','tong6','tong7','tong8','tong9',
+  'dong','nan','xi','bei','zhong','fa','bai',
+  'peng','gang','zimo',
+  'duidui','qingyise','qingdui','yaojiu','y13'
+];
+
+// 预加载全部语音（页面加载后调用，静默下载，不影响界面）
+function preloadAll() {
+  try {
+    ALL_VOICES.forEach(function (name) { getVoice(name); });
+  } catch (e) {}
+}
+
+// 语音播放（缓存复用，秒播；支持快速连续播放同一语音）
 function playVoice(name) {
   try {
-    var audio = new Audio('sounds/' + name + '.mp3');
-    audio.volume = 0.8;
-    audio.play().catch(function(err) {
+    var audio = getVoice(name);
+    // 如果上一个同名语音还在播，克隆一个播，避免被 currentTime=0 掐断
+    if (!audio.paused && !audio.ended) {
+      var clone = audio.cloneNode();
+      clone.volume = 0.8;
+      clone.play().catch(function () {});
+      return;
+    }
+    audio.currentTime = 0;
+    audio.play().catch(function (err) {
       console.log('voice error:', name, err);
     });
   } catch (e) {
@@ -126,5 +162,17 @@ window.snd = {
   zimo: zimo,
   fanVoice: fanVoice,
   lightning: lightning,
-  FAN_VOICES: FAN_VOICES
+  FAN_VOICES: FAN_VOICES,
+  preloadAll: preloadAll
 };
+
+// 页面加载完成后自动预加载全部语音（下载不需要用户手势，播放才需要）
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(preloadAll, 500);
+    });
+  } else {
+    setTimeout(preloadAll, 500);
+  }
+}
