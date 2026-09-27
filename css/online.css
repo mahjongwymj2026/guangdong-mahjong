@@ -435,25 +435,57 @@
 
   /* 其他三家牌统一尺寸（以左家为标准） */
   .mj-back { height: 3vw; width: 2.2vw; }
-  /* ===== 左家：弃牌放大一倍、副露改小1/3、整体底部不超过我手牌红线 ===== */
-  /* 左家弃牌：保持原来的从上到下排列（column），3.4vh → 6.8vh（放大一倍），重叠间距同步 */
-  .seat-left .pond-left {
+  /* ===== 左家：副露1×4放手牌左侧；弃牌两列×8张；底部不越我手牌红线 ===== */
+  /* 容器横向排列：副露列 | 手牌列 | 弃牌列；纵向固定 上2vw / 下9vw(红线) */
+  .seat-left {
+    top: 2vw !important;
+    bottom: 9vw !important;
+    transform: none !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    gap: 0.9vw !important;
+  }
+  /* 座位信息条悬浮在容器顶外，不占牌列位置、不与副露第一组重叠 */
+  .seat-left .seat-info { position: absolute !important; top: -1.8vw !important; left: 0 !important; z-index: 3; }
+
+  /* 副露：1列4组，从屏幕上方往下排；牌高=现弃牌6.8vh，组内3/4张边挨边 */
+  .seat-left .left-melds {
+    display: flex !important;
     flex-direction: column !important;
-    justify-content: flex-start !important;
+    align-self: flex-start !important;
+    gap: 0.5vw !important;
+    margin: 0 !important;
+    width: 6.8vh !important;
+  }
+  .seat-left .left-melds .meld { width: 6.8vh !important; align-items: center !important; }
+  .seat-left .left-melds img { height: 6.8vh !important; }
+  .seat-left .left-melds .meld img + img { margin-top: -1.7vh !important; }
+  /* 横躺牌盒在列内交叉轴居中，旋转后视觉牌列不偏 */
+  .seat-left .left-melds .meld .tiles-row { align-items: center !important; }
+
+  /* 手牌列：牌大小不动(3vw)，底部与弃牌列一起对齐红线 */
+  .seat-left .left-body { gap: 0; align-items: flex-end !important; }
+
+  /* 弃牌：网格两列，每列8张；先填满靠手牌列，再往屏幕中间列；牌边挨边无堆叠 */
+  .seat-left .pond-left {
+    display: grid !important;
+    grid-template-rows: repeat(8, 4.2vw) !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: 5.6vw !important;
+    row-gap: 0 !important;
+    column-gap: 0.1vh !important;
+    align-self: flex-end !important;
     margin-left: 0.9vw !important;
     max-height: none !important;
   }
-  .seat-left #leftPond img { height: 6.8vh !important; margin-top: 0 !important; margin-bottom: -2.86vh !important; }
-  /* 最后一张弃牌不留负边距：视觉底边与容器底边齐平，底部锚定时保证不越过红线 */
-  .seat-left #leftPond img:last-child { margin-bottom: 0 !important; }
-  /* 左家副露：3.4vh → 2.27vh（改小1/3），melds 网格/meld宽度/重叠间距同步 */
-  .left-melds { grid-template-columns: repeat(2, 2.27vh) !important; gap: 0.67vh 0.33vh !important; }
-  .left-melds .meld { width: 2.27vh !important; }
-  .left-melds img { height: 2.27vh !important; }
-  .left-melds .meld img + img { margin-top: -0.57vh !important; }
-  /* 左家改为"底部锚定"：底边固定在我手牌顶部红线处（距屏底 9vw）。
-     弃牌再多也只往上长，绝不越过红线；副露在手牌上方，碰杠后不会遮挡我的副露区 */
-  .seat-left { top: auto !important; bottom: 9vw !important; transform: none !important; }
+  /* 牌高5.6vw（旋转后视觉宽5.6vw/高4.2vw，正好落进网格 5.6vw×4.2vw 格子）。
+     牌盒在格内必须居中，旋转90°后视觉盒才与格子完全重合，不偏位 */
+  .seat-left #leftPond img {
+    height: 5.6vw !important;
+    margin: 0 !important;
+    justify-self: center !important;
+    align-self: center !important;
+  }
   /* ===== 右家、对家：保持 4vw 不动 ===== */
   #rightPond img, #topPond img { height: 4vw !important; }
   .seat-right #rightPond img { height: 4vw !important; }
@@ -474,7 +506,7 @@
   .seat-right .right-back-col { margin-right: 0; }
   .seat-top .top-main { gap: 0; }
   .top-pond { margin: 0; }
-  .seat-left, .seat-right { gap: 0.9vw; }  /* 副露与手牌垂直方向避免重叠 */
+  .seat-right { gap: 0.9vw; }  /* 右家：副露与手牌垂直方向避免重叠（左家已在上方横向块定义） */
 
   /* 左右家手牌/弃牌/副露（竖排旋转） */
   .seat-left .left-back-col .mj-back { height: 3vw; margin-bottom: -0.8vw; }
