@@ -349,6 +349,8 @@
               // 先更新红雾等画面状态并重绘；声音等紧跟其后的 state 快照应用后再播，
               // 避免"声音先响、牌还没打出来"的错位
               sfx.applyState(evtName, evtDetail);
+              // 碰/杠后：被碰的牌已移到副露区，弃牌区不再需要金光提示（有红雾提醒）
+              if (evtName === 'peng' || evtName === 'kong') online.lastDiscard = null;
               render.all();
               online._pendingSfx = { evt: evtName, detail: evtDetail };
               // 兜底：万一该事件后没有 state 快照，30ms 后照播，不丢声音
