@@ -535,6 +535,8 @@
         // 被碰杠者出牌即散雾
         online.mistVictims = [];
         online.mistCaller = null;
+        // 记录最近一次出牌（用于 turnInfo 提示 + 弃牌闪烁动画）
+        online.lastDiscard = { seat: detail.seat, tile: detail.tile, at: Date.now() };
       }
     },
     // 第二步（重绘后）：播放声音、触发瞬时视觉特效
@@ -648,7 +650,14 @@
       var el = document.getElementById('turnInfo');
       if (!el) return;
       var txt = '';
-      if (s.phase === 'end') {
+      // 最近一次出牌（2秒内）→ 显示"XX家 出 XX"
+      if (online.lastDiscard && (Date.now() - online.lastDiscard.at) < 2000) {
+        var seatLabel = seatName(online.lastDiscard.seat);
+        var tileLabel = tileCN(online.lastDiscard.tile);
+        txt = seatLabel + ' 出 ' + tileLabel;
+        // 2秒后恢复原提示
+        setTimeout(function () { render.turnInfo(); }, 2000);
+      } else if (s.phase === 'end') {
         txt = '本局结束';
       } else if (s.phase === 'discard') {
         txt = (s.turn === online.mySeat) ? '该你出牌' : '等 ' + seatName(s.turn) + ' 出牌';
@@ -784,6 +793,13 @@
           var colIdx = i < 8 ? 0 : 1;  // 前8张进列1，后面进列2
           box.children[colIdx].appendChild(img);
         });
+        // 最近一次出牌（2秒内）→ 最后一张弃牌加金色脉冲动画
+        if (online.lastDiscard && online.lastDiscard.seat === seat
+            && (Date.now() - online.lastDiscard.at) < 2000 && disp.length > 0) {
+          var lastColIdx = (disp.length - 1) < 8 ? 0 : 1;
+          var lastImg = box.children[lastColIdx] && box.children[lastColIdx].lastElementChild;
+          if (lastImg && lastImg.tagName === 'IMG') lastImg.classList.add('pond-latest');
+        }
         return;
       }
       disp.forEach(function (t) {
@@ -793,6 +809,18 @@
         img.alt = t;
         box.appendChild(img);
       });
+      // 最近一次出牌（2秒内）→ 最后一张弃牌加金色脉冲动画
+      if (online.lastDiscard && online.lastDiscard.seat === seat
+          && (Date.now() - online.lastDiscard.at) < 2000 && disp.length > 0) {
+        var last;
+        if (boxId === 'rightPond') {
+          var colIdx = (disp.length - 1) < 8 ? 0 : 1;
+          last = box.children[colIdx] && box.children[colIdx].lastElementChild;
+        } else {
+          last = box.lastElementChild;
+        }
+        if (last && last.tagName === 'IMG') last.classList.add('pond-latest');
+      }
     },
 
     melds: function (seat) {
@@ -1484,6 +1512,16 @@
     var labels = ['你', '右家', '对家', '左家'];
     var r = relSeat(seat);
     return labels[r] || ('座' + seat);
+  }
+  // 牌码 → 中文名（全局，供 turnInfo 提示用）
+  var TILE_Z_NAMES = ['', '东', '南', '西', '北', '中', '发', '白'];
+  function tileCN(code) {
+    if (!code || code === 'ghost') return '鬼';
+    var suit = code[0];
+    var num = parseInt(code.slice(1));
+    if (suit === 'Z') return TILE_Z_NAMES[num] || code;
+    var sn = suit === 'W' ? '万' : suit === 'T' ? '条' : '筒';
+    return sn + num;
   }
   function tileImgSrc(t) {
     if (!t) return '';
