@@ -109,16 +109,16 @@ function tile(code) {
   setTimeout(function () { tone(330, 0.08, 'sine', 0.06); }, 60);
 }
 
-// 碰
+// 碰（喊声比出牌声晚0.8秒，先喊牌再喊碰）
 function peng() {
-  playVoice('peng');
+  setTimeout(function () { playVoice('peng'); }, 800);
   tone(180, 0.12, 'square', 0.06);
   setTimeout(function () { tone(140, 0.1, 'square', 0.06); }, 80);
 }
 
-// 杠
+// 杠（喊声比出牌声晚0.8秒）
 function gang() {
-  playVoice('gang');
+  setTimeout(function () { playVoice('gang'); }, 800);
   tone(120, 0.15, 'sawtooth', 0.16);
   setTimeout(function () { tone(80, 0.12, 'sawtooth', 0.16); }, 100);
 }
