@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>广东麻将 · 联机对战</title>
-  <link rel="stylesheet" href="css/game.css?v=131">
-  <link rel="stylesheet" href="css/online.css?v=32">
+  <link rel="stylesheet" href="css/game.css?v=132">
+  <link rel="stylesheet" href="css/online.css?v=33">
 </head>
 <body>
 
@@ -160,13 +160,17 @@
       </div>
     </div>
 
-    <!-- 中心：方向 + 鬼牌 + 剩余张数 -->
+    <!-- 桌布方向水印（独立图层，压在牌下面） -->
+    <div class="table-dir-layer">
+      <div class="dir dir-n">北</div>
+      <div class="dir dir-s">南</div>
+      <div class="dir dir-e">东</div>
+      <div class="dir dir-w">西</div>
+    </div>
+
+    <!-- 中心：鬼牌 + 剩余张数 -->
     <div class="center-area">
       <div class="compass">
-        <div class="dir dir-n">北</div>
-        <div class="dir dir-s">南</div>
-        <div class="dir dir-e">东</div>
-        <div class="dir dir-w">西</div>
         <div class="compass-core">
           <div class="ghost-display" id="ghostDisplay" style="display:none;">
             <div class="ghost-frame">

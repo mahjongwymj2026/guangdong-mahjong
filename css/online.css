@@ -568,7 +568,7 @@
     flex-direction: row-reverse !important;
     align-items: flex-end !important;
     align-self: flex-end !important;
-    margin-right: 0.5vw !important;  /* 抵消旋转牌向右溢出0.5vw，视觉与手牌带0距离 */
+    margin-right: 0.2vw !important;  /* 弃牌区与手牌带视觉间距 */
     max-height: none !important;
     gap: 1vw !important;  /* 两列各溢出0.5vw，gap=1vw 使视觉间距为0 */
   }

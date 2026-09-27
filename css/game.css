@@ -224,13 +224,19 @@
   backdrop-filter: blur(6px);
 }
 
-.dir {
+/* 桌布方向水印：独立图层，压在牌下面，可自由放大移动 */
+.table-dir-layer {
   position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.dir {
+  position: absolute;
   color: #6b5a26;
   opacity: 0.35;
   font-weight: bold;
-  z-index: 0;
-  pointer-events: none;
 }
 
 .dir-n { font-size: 14vh; top: 4vh; left: 50%; transform: translateX(-50%); }
