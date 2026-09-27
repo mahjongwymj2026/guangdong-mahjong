@@ -204,8 +204,8 @@
 /* ---------- 中央信息 + 东南西北 + 剩牌 ---------- */
 .compass {
   position: relative;
-  width: 28vh;
-  height: 28vh;
+  width: 40vh;
+  height: 40vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -228,14 +228,14 @@
   position: absolute;
   color: #e0c160;
   font-weight: bold;
-  font-size: 4.4vh;
+  font-size: 6vh;
   text-shadow: 0 0 0.8vh #000, 0 0.2vh 0.4vh rgba(0,0,0,0.9);
 }
 
-.dir-n { top: -1vh; left: 50%; transform: translateX(-50%); }
-.dir-s { bottom: -1vh; left: 50%; transform: translateX(-50%); }
-.dir-e { right: 2vh; top: 50%; transform: translateY(-50%); }
-.dir-w { left: 2vh; top: 50%; transform: translateY(-50%); }
+.dir-n { top: -1.5vh; left: 50%; transform: translateX(-50%); }
+.dir-s { bottom: -1.5vh; left: 50%; transform: translateX(-50%); }
+.dir-e { right: 3.5vh; top: 50%; transform: translateY(-50%); }
+.dir-w { left: 3.5vh; top: 50%; transform: translateY(-50%); }
 
 .ghost-display {
   display: flex;
@@ -274,7 +274,7 @@
 }
 .ghost-center {
   display: block;
-  height: 7vh;
+  height: 9vh;
   border-radius: 0.9vh;
   animation: ghost-pulse 1.5s infinite ease-in-out;
 }
