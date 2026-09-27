@@ -225,7 +225,7 @@
 }
 
 .dir {
-  position: absolute;
+  position: fixed;
   color: #6b5a26;
   opacity: 0.35;
   font-weight: bold;
@@ -233,10 +233,10 @@
   pointer-events: none;
 }
 
-.dir-n { font-size: 10vh; top: 1vh; left: 50%; transform: translateX(-50%); }
-.dir-s { font-size: 10vh; bottom: 1vh; left: 50%; transform: translateX(-50%); }
-.dir-e { font-size: 16vh; right: 3.5vh; top: 50%; transform: translateY(-50%); }
-.dir-w { font-size: 16vh; left: 3.5vh; top: 50%; transform: translateY(-50%); }
+.dir-n { font-size: 14vh; top: 4vh; left: 50%; transform: translateX(-50%); }
+.dir-s { font-size: 14vh; bottom: 16vh; left: 50%; transform: translateX(-50%); }
+.dir-e { font-size: 30vh; right: 9vw; top: 50%; transform: translateY(-50%); }
+.dir-w { font-size: 30vh; left: 9vw; top: 50%; transform: translateY(-50%); }
 
 .ghost-display {
   display: flex;
