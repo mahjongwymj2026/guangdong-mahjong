@@ -435,20 +435,25 @@
 
   /* 其他三家牌统一尺寸（以左家为标准） */
   .mj-back { height: 3vw; width: 2.2vw; }
-  /* ===== 左家：弃牌放大一倍、副露改小1/3、整体上移 ===== */
-  /* 左家弃牌：3.4vh → 6.8vh（放大一倍），重叠间距同步放大 */
-  /* 左家弃牌：6.8vh 放大一倍，但从下往上排（column-reverse），底部对齐不超过我手牌横线 */
-  .seat-left .pond-left { flex-direction: column-reverse !important; justify-content: flex-start !important; align-self: flex-end !important; }
-  .seat-left #leftPond img { height: 6.8vh !important; margin-bottom: 0 !important; margin-top: -2.86vh !important; }
-  .seat-left #leftPond img:first-child { margin-top: 0 !important; }
+  /* ===== 左家：弃牌放大一倍、副露改小1/3、整体底部不超过我手牌红线 ===== */
+  /* 左家弃牌：保持原来的从上到下排列（column），3.4vh → 6.8vh（放大一倍），重叠间距同步 */
+  .seat-left .pond-left {
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    margin-left: 0.9vw !important;
+    max-height: none !important;
+  }
+  .seat-left #leftPond img { height: 6.8vh !important; margin-top: 0 !important; margin-bottom: -2.86vh !important; }
+  /* 最后一张弃牌不留负边距：视觉底边与容器底边齐平，底部锚定时保证不越过红线 */
+  .seat-left #leftPond img:last-child { margin-bottom: 0 !important; }
   /* 左家副露：3.4vh → 2.27vh（改小1/3），melds 网格/meld宽度/重叠间距同步 */
   .left-melds { grid-template-columns: repeat(2, 2.27vh) !important; gap: 0.67vh 0.33vh !important; }
   .left-melds .meld { width: 2.27vh !important; }
   .left-melds img { height: 2.27vh !important; }
   .left-melds .meld img + img { margin-top: -0.57vh !important; }
-  /* 左家整体上移：top 4vw → 1.2vw，碰杠后副露不遮挡我的副露区 */
-  .seat-left { top: 1.2vw !important; }
-  .seat-left .pond-left { margin-left: 0.9vw !important; max-height: none !important; }
+  /* 左家改为"底部锚定"：底边固定在我手牌顶部红线处（距屏底 9vw）。
+     弃牌再多也只往上长，绝不越过红线；副露在手牌上方，碰杠后不会遮挡我的副露区 */
+  .seat-left { top: auto !important; bottom: 9vw !important; transform: none !important; }
   /* ===== 右家、对家：保持 4vw 不动 ===== */
   #rightPond img, #topPond img { height: 4vw !important; }
   .seat-right #rightPond img { height: 4vw !important; }
@@ -473,6 +478,7 @@
 
   /* 左右家手牌/弃牌/副露（竖排旋转） */
   .seat-left .left-back-col .mj-back { height: 3vw; margin-bottom: -0.8vw; }
+  .seat-left .left-back-col .mj-back:last-child { margin-bottom: 0 !important; }
   .seat-right .right-back-col .mj-back { height: 3vw; margin-bottom: -0.8vw; }
 
   /* 底部元素定位（vw 单位，横屏时更稳定） */
