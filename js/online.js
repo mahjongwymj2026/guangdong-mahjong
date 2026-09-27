@@ -343,36 +343,43 @@
             ui.showRoomExpired();
           } else {
             if (m.evt === 'auto_action') ui.onAutoAction(m.detail);
-            // 先更新红雾等画面状态并重绘；声音等紧跟其后的 state 快照应用后再播，
-            // 避免"声音先响、牌还没打出来"的错位
-            sfx.applyState(m.evt, m.detail);
-            render.all();
-            online._pendingSfx = { evt: m.evt, detail: m.detail };
-            // 兜底：万一该事件后没有 state 快照，30ms 后照播，不丢声音
+            // 动作事件统一延迟1秒：画面+声音同时出现，给语音预加载留时间，节奏均匀
+            var evtName = m.evt, evtDetail = m.detail;
             setTimeout(function () {
-              if (online._pendingSfx) {
-                var p = online._pendingSfx;
-                online._pendingSfx = null;
-                sfx.play(p.evt, p.detail);
-              }
-            }, 30);
+              // 先更新红雾等画面状态并重绘；声音等紧跟其后的 state 快照应用后再播，
+              // 避免"声音先响、牌还没打出来"的错位
+              sfx.applyState(evtName, evtDetail);
+              render.all();
+              online._pendingSfx = { evt: evtName, detail: evtDetail };
+              // 兜底：万一该事件后没有 state 快照，30ms 后照播，不丢声音
+              setTimeout(function () {
+                if (online._pendingSfx) {
+                  var p = online._pendingSfx;
+                  online._pendingSfx = null;
+                  sfx.play(p.evt, p.detail);
+                }
+              }, 30);
+            }, 1000);
           }
           break;
         case 'state':
-          var fxRes = state.apply(m.state);
-          render.all();
-          // 房主卡倒计时：每个 state 快照都带权威时间戳，所有玩家同步
-          if (m.state && m.state.cardExpiry) {
-            online._cardExpiry = m.state.cardExpiry;
-            ui.updateCardCountdown(m.state.cardExpiry);
-          }
-          // 画面已更新为最新快照，此时再播放事件声音，声画基本同步
-          if (online._pendingSfx) {
-            var pend = online._pendingSfx;
-            online._pendingSfx = null;
-            sfx.play(pend.evt, pend.detail);
-          }
-          if (fxRes && fxRes.lightning) triggerLightning();
+          // state 快照与动作事件同步延迟1秒，保持声画一致
+          setTimeout(function () {
+            var fxRes = state.apply(m.state);
+            render.all();
+            // 房主卡倒计时：每个 state 快照都带权威时间戳，所有玩家同步
+            if (m.state && m.state.cardExpiry) {
+              online._cardExpiry = m.state.cardExpiry;
+              ui.updateCardCountdown(m.state.cardExpiry);
+            }
+            // 画面已更新为最新快照，此时再播放事件声音，声画基本同步
+            if (online._pendingSfx) {
+              var pend = online._pendingSfx;
+              online._pendingSfx = null;
+              sfx.play(pend.evt, pend.detail);
+            }
+            if (fxRes && fxRes.lightning) triggerLightning();
+          }, 1000);
           break;
         case 'error':
           ui.toast(translateErr(m.code) || m.msg || m.code, 'error');
