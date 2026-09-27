@@ -215,27 +215,28 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6vh;
+  gap: 0.9vh;
   z-index: 1;
   background: rgba(0,0,0,0.3);
-  padding: 1.5vh 2vh;
-  border-radius: 2vh;
+  padding: 2vh 2.8vh;
+  border-radius: 2.6vh;
   border: 1px solid rgba(224, 193, 96, 0.2);
   backdrop-filter: blur(6px);
 }
 
 .dir {
   position: absolute;
-  color: #e0c160;
+  color: #6b5a26;
+  opacity: 0.35;
   font-weight: bold;
-  font-size: 6vh;
-  text-shadow: 0 0 0.8vh #000, 0 0.2vh 0.4vh rgba(0,0,0,0.9);
+  z-index: 0;
+  pointer-events: none;
 }
 
-.dir-n { top: -1.5vh; left: 50%; transform: translateX(-50%); }
-.dir-s { bottom: -1.5vh; left: 50%; transform: translateX(-50%); }
-.dir-e { right: 3.5vh; top: 50%; transform: translateY(-50%); }
-.dir-w { left: 3.5vh; top: 50%; transform: translateY(-50%); }
+.dir-n { font-size: 10vh; top: 1vh; left: 50%; transform: translateX(-50%); }
+.dir-s { font-size: 10vh; bottom: 1vh; left: 50%; transform: translateX(-50%); }
+.dir-e { font-size: 16vh; right: 3.5vh; top: 50%; transform: translateY(-50%); }
+.dir-w { font-size: 16vh; left: 3.5vh; top: 50%; transform: translateY(-50%); }
 
 .ghost-display {
   display: flex;
@@ -246,10 +247,10 @@
 /* 中央鬼牌：金色渐变圈 + 右上角红圈「鬼」字 */
 .ghost-frame {
   position: relative;
-  padding: 0.8vh;
-  border-radius: 1.6vh;
+  padding: 1.1vh;
+  border-radius: 2vh;
   background: linear-gradient(140deg, #ffe08a 0%, #f2b63a 28%, #b8860b 52%, #ffd34d 80%, #8a5a00 100%);
-  box-shadow: 0 0 2vh rgba(255, 200, 80, 0.55);
+  box-shadow: 0 0 2.6vh rgba(255, 200, 80, 0.55);
 }
 .ghost-frame::before {
   content: "";
@@ -262,37 +263,37 @@
 .ghost-frame::after {
   content: "鬼";
   position: absolute;
-  top: -1vh; right: -1vh;
-  width: 4vh; height: 4vh;
+  top: -1.4vh; right: -1.4vh;
+  width: 5.5vh; height: 5.5vh;
   border-radius: 50%;
   background: red;
   color: #ffe08a;
-  font-size: 2.6vh; font-weight: 900;
-  line-height: 4vh; text-align: center;
+  font-size: 3.6vh; font-weight: 900;
+  line-height: 5.5vh; text-align: center;
   z-index: 3;
   pointer-events: none;
 }
 .ghost-center {
   display: block;
-  height: 9vh;
-  border-radius: 0.9vh;
+  height: 13vh;
+  border-radius: 1.2vh;
   animation: ghost-pulse 1.5s infinite ease-in-out;
 }
 
 .turn-info {
-  font-size: 2vh;
+  font-size: 2.8vh;
   color: #e0c160;
   text-shadow: 0 0 0.3vh #000;
   text-align: center;
-  min-height: 2.4vh;
+  min-height: 3.2vh;
 }
 
 .deck-info {
-  font-size: 1.7vh;
+  font-size: 2.4vh;
   color: #fff;
   background: rgba(0,0,0,0.55);
-  padding: 0.3vh 1vh;
-  border-radius: 1vh;
+  padding: 0.4vh 1.4vh;
+  border-radius: 1.4vh;
 }
 
 /* 中央牌山：隐藏，不显示色块 */
