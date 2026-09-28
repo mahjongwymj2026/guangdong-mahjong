@@ -518,26 +518,26 @@
     gap: 0 !important;
   }
 
-  /* 手牌副露竖带：纵向排列，手牌在上端（位置固定），副露用 margin-top:auto 压到底 */
+  /* 手牌副露竖带：纵向排列，手牌在下端（位置固定），副露在上端从下往上长 */
   .seat-right .right-strip {
     display: flex !important;
-    flex-direction: column !important;
+    flex-direction: column-reverse !important;  /* 手牌在下，副露在上 */
     align-self: stretch !important;
     justify-content: flex-start !important;
     height: 100% !important;
     position: relative !important;
   }
 
-  /* 副露：竖带最下端，碰第1组在最下方（槽位1），再碰往上长（column-reverse） */
+  /* 副露：竖带上端，碰第1组在最上方（槽位4），再碰往下长（column-reverse使第1个在最上） */
   .seat-right .right-melds {
     position: relative !important;
     right: auto !important;
     bottom: auto !important;
     z-index: 2 !important;
     display: flex !important;
-    flex-direction: column-reverse !important;
+    flex-direction: column !important;  /* 不再reverse，父级已是reverse */
     gap: 0.5vw !important;
-    margin: auto 0 0 0 !important;  /* top:auto 压到最底 */
+    margin: 0 0 auto 0 !important;  /* bottom:auto 压到最上 */
     width: 6.8vh !important;
     align-self: flex-end !important;
   }
@@ -546,20 +546,20 @@
   .seat-right .right-melds .meld img + img { margin-top: -1.7vh !important; }
   .seat-right .right-melds .meld .tiles-row { align-items: center !important; }
 
-  /* 手牌列：竖带上端，顶部对齐，从上往下排；碰牌后从下端缩短，位置不动 */
+  /* 手牌列：竖带下端，底部对齐，从下往上排；碰牌后从上端缩短，位置固定 */
   .seat-right .right-back-col {
     display: flex !important;
-    flex-direction: column !important;
-    align-self: flex-start !important;
+    flex-direction: column-reverse !important;  /* 从下往上排 */
+    align-self: flex-end !important;  /* 贴底部 */
     gap: 0 !important;
     max-height: none !important;
     margin-right: 0 !important;
   }
   .seat-right .right-back-col .mj-back {
     height: 3vw !important;
-    margin-bottom: -0.8vw !important;
+    margin-top: -0.8vw !important;  /* 从下往上排，负margin在top */
   }
-  .seat-right .right-back-col .mj-back:last-child { margin-bottom: 0 !important; }
+  .seat-right .right-back-col .mj-back:first-child { margin-top: 0 !important; }
 
   /* 弃牌：flex两列，每列8张，column-reverse（从下往上排），牌=左家弃牌4vw，间距0；
      row-reverse：第1列（先满）显示在靠手牌一侧，第2列靠屏幕中间 */
