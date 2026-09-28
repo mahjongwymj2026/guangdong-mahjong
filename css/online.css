@@ -528,11 +528,11 @@
     position: relative !important;
   }
 
-  /* 副露：绝对定位钉在屏幕下方（对齐你手牌下方），碰第1组在最下方，再碰往上长 */
+  /* 副露：fixed 钉在屏幕右下方（对齐你手牌下方），碰第1组在最下方，再碰往上长 */
   .seat-right .right-melds {
-    position: absolute !important;
-    right: 0 !important;
-    bottom: calc(9vw - 1.5vw) !important;  /* 对齐你手牌下方（屏幕bottom 1.5vw） */
+    position: fixed !important;
+    right: 1.5vh !important;  /* 和座位容器 right 一致 */
+    bottom: 1.5vw !important;  /* 对齐你手牌下方（屏幕底部） */
     z-index: 2 !important;
     display: flex !important;
     flex-direction: column-reverse !important;
@@ -561,13 +561,14 @@
   .seat-right .right-back-col .mj-back:last-child { margin-bottom: 0 !important; }
 
   /* 弃牌：flex两列，每列8张，column-reverse（从下往上排），牌=左家弃牌4vw，间距0；
-     row-reverse：第1列（先满）显示在靠手牌一侧，第2列靠屏幕中间 */
+     row-reverse：第1列（先满）显示在靠手牌一侧，第2列靠屏幕中间；
+     margin-right 给副露让出位置（副露宽6.8vh + 0.1vw间距） */
   .seat-right .pond-right {
     display: flex !important;
     flex-direction: row-reverse !important;
     align-items: flex-end !important;
     align-self: flex-end !important;
-    margin-right: 0.02vw !important;  /* 弃牌列1与手牌带视觉间距0.02vw */
+    margin-right: calc(6.8vh + 0.1vw) !important;  /* 给副露让位 */
     max-height: none !important;
     gap: 1.01vw !important;  /* 两列各溢出0.5vw，gap=1.01vw 使视觉间距为0.01vw */
   }
