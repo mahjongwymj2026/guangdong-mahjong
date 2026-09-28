@@ -568,9 +568,9 @@
     flex-direction: row-reverse !important;
     align-items: flex-end !important;
     align-self: flex-end !important;
-    margin-right: 0.3vw !important;  /* 弃牌列1与手牌带视觉间距0.3vw */
+    margin-right: 0.02vw !important;  /* 弃牌列1与手牌带视觉间距0.02vw */
     max-height: none !important;
-    gap: 1.2vw !important;  /* 两列各溢出0.5vw，gap=1.2vw 使视觉间距为0.2vw */
+    gap: 1.01vw !important;  /* 两列各溢出0.5vw，gap=1.01vw 使视觉间距为0.01vw */
   }
   .seat-right .pond-col {
     display: flex !important;
