@@ -378,6 +378,8 @@
           }, 1000);
           break;
         case 'error':
+          // 忽略"没轮到你"、"当前不能操作"这类无实际意义的提示
+          if (m.code === 'turn.notYours' || m.code === 'phase.wrong') break;
           ui.toast(translateErr(m.code) || m.msg || m.code, 'error');
           // 阶段D 步骤1：session.invalid 表示旧会话已失效，清 localStorage 避免循环重试
           if (m.code === 'session.invalid') {
