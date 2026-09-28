@@ -529,7 +529,7 @@
   }
 
   /* 副露：fixed 钉在屏幕右下方（对齐你手牌下方），碰第1组在最下方，再碰往上长 */
-  .seat-right .right-melds {
+  .game-root .seat-right .right-melds {
     position: fixed !important;
     right: 1.5vh !important;  /* 和座位容器 right 一致 */
     bottom: 1.5vw !important;  /* 对齐你手牌下方（屏幕底部） */
@@ -540,10 +540,10 @@
     margin: 0 !important;
     width: 6.8vh !important;
   }
-  .seat-right .right-melds .meld { width: 6.8vh !important; }
-  .seat-right .right-melds img { height: 6.8vh !important; }
-  .seat-right .right-melds .meld img + img { margin-top: -1.7vh !important; }
-  .seat-right .right-melds .meld .tiles-row { align-items: center !important; }
+  .game-root .seat-right .right-melds .meld { width: 6.8vh !important; }
+  .game-root .seat-right .right-melds img { height: 6.8vh !important; }
+  .game-root .seat-right .right-melds .meld img + img { margin-top: -1.7vh !important; }
+  .game-root .seat-right .right-melds .meld .tiles-row { align-items: center !important; }
 
   /* 手牌列：竖带上端，顶部对齐，从上往下排；碰牌后从下端缩短，位置不动 */
   .seat-right .right-back-col {
