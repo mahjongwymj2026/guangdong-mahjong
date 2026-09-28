@@ -522,9 +522,9 @@
   .seat-right .right-strip {
     display: flex !important;
     flex-direction: column !important;
-    align-self: stretch !important;
+    align-self: flex-start !important;  /* 改为顶部对齐，不拉伸 */
     justify-content: flex-start !important;
-    height: 100% !important;
+    height: auto !important;  /* 改为自动高度，只包裹手牌 */
     position: relative !important;
   }
 
@@ -568,9 +568,9 @@
     flex-direction: row-reverse !important;
     align-items: flex-end !important;
     align-self: flex-end !important;
-    margin-right: calc(6.8vh + 0.1vw) !important;  /* 给副露让位 */
+    margin-right: calc(6.8vh + 0.03vw) !important;  /* 给副露让位，间距0.03vw */
     max-height: none !important;
-    gap: 1.01vw !important;  /* 两列各溢出0.5vw，gap=1.01vw 使视觉间距为0.01vw */
+    gap: 1.03vw !important;  /* 两列各溢出0.5vw，gap=1.03vw 使视觉间距为0.03vw */
   }
   .seat-right .pond-col {
     display: flex !important;
