@@ -528,18 +528,18 @@
     position: relative !important;
   }
 
-  /* 副露：竖带最下端，碰第1组在最下方（槽位1），再碰往上长（column-reverse） */
+  /* 副露：绝对定位钉在竖带最下端，碰第1组在最下方（槽位1），再碰往上长（column-reverse）；
+     不参与 flex 布局，不挤占手牌位置 */
   .seat-right .right-melds {
-    position: relative !important;
-    right: auto !important;
-    bottom: auto !important;
+    position: absolute !important;
+    right: 0 !important;
+    bottom: 0 !important;
     z-index: 2 !important;
     display: flex !important;
     flex-direction: column-reverse !important;
     gap: 0.5vw !important;
-    margin: auto 0 0 0 !important;  /* top:auto 压到最底 */
+    margin: 0 !important;
     width: 6.8vh !important;
-    align-self: flex-end !important;
   }
   .seat-right .right-melds .meld { width: 6.8vh !important; }
   .seat-right .right-melds img { height: 6.8vh !important; }
