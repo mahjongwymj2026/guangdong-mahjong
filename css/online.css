@@ -528,12 +528,11 @@
     position: relative !important;
   }
 
-  /* 副露：绝对定位钉在竖带最下端，碰第1组在最下方（槽位1），再碰往上长（column-reverse）；
-     不参与 flex 布局，不挤占手牌位置 */
+  /* 副露：绝对定位钉在屏幕下方（对齐你手牌下方），碰第1组在最下方，再碰往上长 */
   .seat-right .right-melds {
     position: absolute !important;
     right: 0 !important;
-    bottom: 0 !important;
+    bottom: calc(9vw - 1.5vw) !important;  /* 对齐你手牌下方（屏幕bottom 1.5vw） */
     z-index: 2 !important;
     display: flex !important;
     flex-direction: column-reverse !important;
