@@ -336,17 +336,18 @@
             ui.showRoomExpired();
           } else {
             if (m.evt === 'auto_action') ui.onAutoAction(m.detail);
+            // claim_options 只是通知客户端显示碰/杠按钮，不需要声音，也不覆盖 discard 的待播声音
+            if (m.evt === 'claim_options') {
+              // 不进 _pendingSfx 机制，避免吃掉 discard 的出牌声
+              break;
+            }
             // 动作事件统一延迟1秒：画面+声音同时出现，给语音预加载留时间，节奏均匀
             var evtName = m.evt, evtDetail = m.detail;
             setTimeout(function () {
-              // 先更新红雾等画面状态并重绘；声音等紧跟其后的 state 快照应用后再播，
-              // 避免"声音先响、牌还没打出来"的错位
               sfx.applyState(evtName, evtDetail);
-              // 碰/杠后：被碰的牌已移到副露区，弃牌区不再需要金光提示（有红雾提醒）
               if (evtName === 'peng' || evtName === 'kong') online.lastDiscard = null;
               render.all();
               online._pendingSfx = { evt: evtName, detail: evtDetail };
-              // 兜底：万一该事件后没有 state 快照，30ms 后照播，不丢声音
               setTimeout(function () {
                 if (online._pendingSfx) {
                   var p = online._pendingSfx;
@@ -568,17 +569,18 @@
             break;
           case 'hu':
             // 胡牌人声：普通胡喊"自摸"，特殊胡牌喊番型名（对对糊/清一色/清对/幺九/十三幺）
-            var fanName = (online.cur && online.cur.endData) ? online.cur.endData.fan : null;
+            var ed = detail.endData || (online.cur && online.cur.endData) || null;
+            var fanName = ed ? ed.name : null;
             var fanVoiceName = fanName && window.snd.FAN_VOICES ? window.snd.FAN_VOICES[fanName] : null;
             if (fanVoiceName) {
               if (window.snd.playVoice) window.snd.playVoice(fanVoiceName);
-            } else if (detail.isSelfDraw && window.snd.zimo) {
-              window.snd.zimo();  // 无语音文件时电子音兜底
+            } else if (detail.isSelfDraw || (ed && ed.name === '普通自摸')) {
+              if (window.snd.playVoice) window.snd.playVoice('zimo');
             } else if (window.snd.hu) {
               window.snd.hu();
             }
             // 鬼牌胡牌 → 闪电
-            if (online.cur && online.cur.endData && online.cur.endData.winnerHasGhost) {
+            if (ed && ed.winnerHasGhost) {
               triggerLightning();
             }
             break;
