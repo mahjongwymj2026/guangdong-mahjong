@@ -574,10 +574,11 @@
             var ed = detail.endData || (online.cur && online.cur.endData) || null;
             var fanName = ed ? ed.name : null;
             var fanVoiceName = fanName && window.snd.FAN_VOICES ? window.snd.FAN_VOICES[fanName] : null;
-            if (fanVoiceName) {
-              if (window.snd.playVoice) window.snd.playVoice(fanVoiceName);
-            } else if (detail.isSelfDraw || (ed && ed.name === '普通自摸')) {
+            // 自己胡牌且是自摸时，ed 可能还没准备好，但 detail.isSelfDraw 是可靠的
+            if (detail.isSelfDraw) {
               if (window.snd.playVoice) window.snd.playVoice('zimo');
+            } else if (fanVoiceName) {
+              if (window.snd.playVoice) window.snd.playVoice(fanVoiceName);
             } else if (window.snd.hu) {
               window.snd.hu();
             }
