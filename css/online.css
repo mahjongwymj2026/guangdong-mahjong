@@ -3,183 +3,485 @@
    复用 game.css 的牌桌/牌/座位/弹窗视觉，只新增 lobby/房间信息/toast/断线
    ============================================================ */
 
-/* ---------- Lobby ---------- */
+/* ============================================================
+   首页 + 联机大厅（合并单页）—— 深夜墨蓝 × 鎏金玻璃风
+   竖屏上下堆叠，横屏左右分栏；牌桌样式不受影响
+   ============================================================ */
 .lobby-root {
   position: fixed;
   inset: 0;
   background:
-    url('../images/fig/bg.png') center / cover no-repeat,
-    radial-gradient(ellipse at 50% 45%, #17624b 0%, #0d3d2c 55%, #07271c 100%);
+    linear-gradient(180deg, rgba(6, 14, 34, 0.84), rgba(8, 20, 46, 0.9)),
+    url('../images/home_bg.jpg') center / cover no-repeat,
+    radial-gradient(ellipse at 50% 0%, #0e2148 0%, #081428 60%, #050b18 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2vh 2vw;
+  padding: 3vh 6vw;
   font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-  color: #fff;
+  color: #f2f5fb;
   overflow: auto;
 }
 
-.lobby-card,
-.room-card {
-  background: rgba(7, 39, 28, 0.85);
-  border: 1px solid rgba(255, 213, 79, 0.3);
-  border-radius: 12px;
-  padding: 3vh 3vw;
-  max-width: 480px;
-  width: 100%;
-  margin-bottom: 2vh;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+/* 房主卡倒计时：钉在大厅顶部中央 */
+.lobby-root .lobby-cd {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
 }
 
-.lobby-title {
-  text-align: center;
-  font-size: 26px;
-  color: #ffd54f;
-  margin-bottom: 2vh;
-  letter-spacing: 2px;
-}
-
-.lobby-row,
-.lobby-section {
-  margin-bottom: 1.6vh;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6vh;
-}
-
-.lobby-label {
-  font-size: 13px;
-  color: #aaa;
-}
-
-.lobby-input {
-  background: rgba(13, 61, 44, 0.6);
-  border: 1px solid rgba(255, 213, 79, 0.25);
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 16px;
+/* 隐藏管理员入口：左上角 48px 完全透明热区（仅大厅内存在） */
+.admin-secret {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 6px);
+  left: calc(env(safe-area-inset-left, 0px) + 6px);
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  opacity: 0;
+  cursor: default;
+  z-index: 70;
+  -webkit-tap-highlight-color: transparent;
   outline: none;
 }
-.lobby-input:focus { border-color: #ffd54f; }
 
+.home-stage {
+  width: 100%;
+  max-width: 920px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.6vh;
+}
+
+/* ---------- 品牌区 ---------- */
+.brand-col { text-align: center; }
+.brand-tiles {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 1.6vh;
+}
+.brand-tiles .bt {
+  width: 50px;
+  height: 70px;
+  object-fit: contain;
+  border-radius: 8px;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.55));
+}
+.brand-tiles .t1 { transform: rotate(-10deg) translateY(7px); }
+.brand-tiles .t2 { transform: translateY(-7px); }
+.brand-tiles .t3 { transform: rotate(10deg) translateY(7px); }
+.brand-title {
+  margin: 0;
+  font-size: clamp(30px, 7vw, 46px);
+  font-weight: 900;
+  letter-spacing: 8px;
+  background: linear-gradient(180deg, #ffedb0 0%, #e8b84b 55%, #a8761d 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+}
+.brand-sub {
+  margin: 0.8vh 0 0;
+  font-size: clamp(12px, 1.8vw, 15px);
+  letter-spacing: 7px;
+  color: rgba(232, 210, 150, 0.72);
+}
+
+/* ---------- 操作区 ---------- */
+.entry-col {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6vh;
+}
+
+.entry-card,
+.room-card {
+  background: linear-gradient(160deg, rgba(22, 38, 72, 0.72), rgba(11, 22, 46, 0.84));
+  border: 1px solid rgba(232, 184, 75, 0.28);
+  border-radius: 18px;
+  padding: 20px 20px 16px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  margin: 0;
+  max-width: none;
+}
+
+/* 底分 / 总分 步进器 */
+.setting-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(232, 184, 75, 0.18);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.step-label { font-size: 12px; color: rgba(232, 210, 150, 0.7); letter-spacing: 2px; }
+.step-ctl { display: flex; align-items: center; justify-content: space-between; }
+.step-btn {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(232, 184, 75, 0.4);
+  background: rgba(232, 184, 75, 0.08);
+  color: #e8b84b;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.12s, background 0.2s;
+}
+.step-btn:active { transform: scale(0.9); background: rgba(232, 184, 75, 0.22); }
+.step-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffe08a;
+  min-width: 60px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.hidden-select {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 输入框 */
+.lobby-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(6, 14, 34, 0.55);
+  border: 1px solid rgba(232, 184, 75, 0.25);
+  color: #fff;
+  padding: 13px 14px;
+  border-radius: 12px;
+  font-size: 16px;
+  outline: none;
+  margin-bottom: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.lobby-input:focus { border-color: #e8b84b; box-shadow: 0 0 0 3px rgba(232, 184, 75, 0.15); }
+.lobby-input::placeholder { color: rgba(220, 228, 245, 0.38); }
 .lobby-input.room-id {
-  letter-spacing: 6px;
+  letter-spacing: 8px;
   text-align: center;
   font-size: 22px;
   font-weight: bold;
 }
+.nick-input { margin-bottom: 14px; }
 
-.lobby-btn {
-  padding: 10px 16px;
+/* 创建 / 加入 标签 */
+.mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: rgba(6, 14, 34, 0.6);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 12px;
+}
+.mode-tab {
   border: none;
-  border-radius: 8px;
+  background: transparent;
+  color: rgba(220, 228, 245, 0.55);
+  font-size: 15px;
+  font-weight: 700;
+  padding: 11px 0;
+  min-height: 44px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+.mode-tab.active {
+  background: linear-gradient(180deg, rgba(232, 184, 75, 0.22), rgba(232, 184, 75, 0.1));
+  color: #ffe08a;
+  box-shadow: inset 0 0 0 1px rgba(232, 184, 75, 0.35);
+}
+.tab-pane { display: flex;
+  flex-direction: column;
+}
+
+/* 按钮 */
+.lobby-btn {
+  border: none;
+  border-radius: 12px;
   cursor: pointer;
   font-size: 15px;
-  font-weight: bold;
-  transition: background 0.2s, transform 0.1s;
+  font-weight: 800;
+  padding: 11px 16px;
+  min-height: 46px;
+  transition: transform 0.12s, filter 0.2s, opacity 0.2s;
 }
-.lobby-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.lobby-btn:not(:disabled):active { transform: scale(0.98); }
-
+.lobby-btn.big { width: 100%; padding: 14px 16px; font-size: 17px; min-height: 50px; }
+.lobby-btn:disabled {
+  cursor: not-allowed;
+  box-shadow: none;
+  text-shadow: none;
+}
+.lobby-btn.primary:disabled,
+.lobby-btn.danger:disabled {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(220, 228, 245, 0.32);
+}
+.lobby-btn.small:disabled { background: rgba(255, 255, 255, 0.05); color: rgba(220, 228, 245, 0.3); }
+.lobby-btn:not(:disabled):active { transform: scale(0.97); }
 .lobby-btn.primary {
-  background: linear-gradient(180deg, #ffd54f, #ffb300);
-  color: #1b1b1b;
+  background: linear-gradient(180deg, #f6d27b, #d99e2f);
+  color: #241a05;
+  box-shadow: 0 8px 20px rgba(217, 158, 47, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
-.lobby-btn.primary:not(:disabled):hover { background: linear-gradient(180deg, #ffe082, #ffd54f); }
+.lobby-btn.primary:not(:disabled):hover { filter: brightness(1.07); }
+.lobby-btn.small { background: rgba(255, 255, 255, 0.08); color: #e6ebf7; font-size: 13px; padding: 7px 14px; min-height: 36px; }
+.lobby-btn.danger { background: linear-gradient(180deg, #e57373, #b3261e); color: #fff; }
 
-.lobby-btn.small {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  font-size: 13px;
-  padding: 6px 12px;
-}
+.lobby-hint { font-size: 12px; color: rgba(220, 228, 245, 0.58); text-align: center; margin-top: 8px; }
+.lobby-status { text-align: center; font-size: 13px; color: #e8b84b; min-height: 1.2em; margin-top: 10px; }
 
-.lobby-btn.danger {
-  background: linear-gradient(180deg, #ff8080, #cc3030);
-  color: #fff;
+/* 次要入口 */
+.sub-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
 }
-
-.lobby-hint {
-  font-size: 12px;
-  color: #888;
-  text-align: center;
+.sub-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(232, 210, 150, 0.72);
+  font-size: 14px;
+  letter-spacing: 1px;
+  padding: 10px 6px;
+  text-decoration: none;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
 }
-
-.lobby-divider {
-  text-align: center;
-  color: #666;
-  margin: 1.6vh 0;
-  font-size: 12px;
-}
-
-.lobby-status {
-  text-align: center;
-  font-size: 13px;
-  color: #ffd54f;
-  margin-top: 1vh;
-  min-height: 1.2em;
-}
+.sub-link:active { opacity: 0.6; }
+.sub-sep { color: rgba(232, 210, 150, 0.3); }
 
 /* ---------- 房内大厅 ---------- */
 .room-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2vh;
+  margin-bottom: 14px;
   font-size: 14px;
   flex-wrap: wrap;
   gap: 0.5em;
 }
 .room-id b { color: #ffd54f; font-size: 18px; letter-spacing: 2px; }
-.room-status-text { color: #aaa; }
+.room-status-text { color: rgba(220, 228, 245, 0.6); }
 
 .seats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1vh;
-  margin-bottom: 2vh;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 .seat-card {
-  background: rgba(13, 61, 44, 0.5);
-  border: 1px solid rgba(255, 213, 79, 0.15);
-  border-radius: 8px;
+  background: rgba(6, 14, 34, 0.4);
+  border: 1px solid rgba(232, 184, 75, 0.16);
+  border-radius: 12px;
   padding: 10px 12px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.seat-card.me { border-color: #ffd54f; background: rgba(255, 213, 79, 0.1); }
-.seat-card.taken { background: rgba(40, 100, 70, 0.5); }
+.seat-card.me { border-color: #e8b84b; background: rgba(232, 184, 75, 0.1); }
+.seat-card.taken { background: rgba(35, 62, 110, 0.5); }
 .seat-card.empty { opacity: 0.5; }
 .seat-idx {
   width: 28px; height: 28px;
-  background: #1b5e4f;
+  background: #28436f;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 14px; font-weight: bold; color: #fff;
 }
-.seat-card.me .seat-idx { background: #ffd54f; color: #1b1b1b; }
+.seat-card.me .seat-idx { background: #e8b84b; color: #1b1b1b; }
 .seat-info-text { flex: 1; font-size: 13px; }
 .seat-name-text { color: #fff; font-weight: bold; }
-.seat-state { font-size: 11px; color: #888; }
+.seat-state { font-size: 11px; color: rgba(255,255,255,.4); }
 .seat-state.online { color: #7CFC9A; }
 .seat-state.offline { color: #ff8080; }
+.bot-tag {
+  font-size: 10px;
+  background: rgba(124, 252, 154, 0.15);
+  color: #7CFC9A;
+  border: 1px solid rgba(124, 252, 154, 0.35);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
 .seat-owner-tag {
   font-size: 10px;
-  background: #ffd54f;
+  background: #e8b84b;
   color: #1b1b1b;
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: 4px;
 }
+.btn-add-bot, .btn-rm-bot {
+  margin-top: 4px;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(232, 184, 75, 0.4);
+  background: rgba(232, 184, 75, 0.08);
+  color: #ffe08a;
+  cursor: pointer;
+}
+.btn-rm-bot { border-color: rgba(255, 128, 128, 0.4); background: rgba(255, 128, 128, 0.08); color: #ff9a9a; }
 
 .room-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 .room-actions .lobby-btn { flex: 1; min-width: 120px; }
+
+/* ---------- 规则与说明 弹层 ---------- */
+.info-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 8, 20, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 4vh 5vw;
+}
+.info-mask.open { display: flex; }
+.info-modal {
+  width: 100%;
+  max-width: 520px;
+  max-height: 86vh;
+  background: linear-gradient(165deg, #162648, #0b162e);
+  border: 1px solid rgba(232, 184, 75, 0.3);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+.info-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(232, 184, 75, 0.18);
+}
+.info-head h2 { margin: 0; font-size: 18px; color: #ffe08a; letter-spacing: 2px; }
+.info-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 26px;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+  min-width: 36px;
+  min-height: 36px;
+}
+.info-close:active { opacity: 0.6; }
+.info-body { padding: 16px 20px 22px; overflow-y: auto; }
+.info-body::-webkit-scrollbar { width: 5px; }
+.info-body::-webkit-scrollbar-thumb { background: rgba(232, 184, 75, 0.35); border-radius: 3px; }
+.info-body::-webkit-scrollbar-track { background: transparent; }
+.info-section { margin-bottom: 22px; }
+.info-section:last-child { margin-bottom: 0; }
+.info-section h3 { margin: 0 0 10px; font-size: 15px; color: #e8b84b; }
+.dlist {
+  margin: 0;
+  padding-left: 18px;
+  color: rgba(228, 234, 248, 0.82);
+  font-size: 13.5px;
+  line-height: 1.9;
+}
+.speed-btns { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.speed-btn {
+  padding: 11px 0;
+  min-height: 44px;
+  border-radius: 9px;
+  border: 1px solid rgba(232, 184, 75, 0.3);
+  background: rgba(255, 255, 255, 0.04);
+  color: #dce4f5;
+  font-size: 13px;
+  cursor: pointer;
+}
+.speed-btn.active {
+  background: linear-gradient(180deg, #f6d27b, #d99e2f);
+  color: #241a05;
+  border-color: transparent;
+  font-weight: 800;
+}
+.score-tip { margin: 0 0 8px; font-size: 12.5px; color: rgba(220, 228, 245, 0.55); line-height: 1.7; }
+.table-cap { margin: 14px 0 6px; font-size: 13px; color: #e8b84b; font-weight: 700; }
+.score-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.score-table th, .score-table td {
+  border: 1px solid rgba(232, 184, 75, 0.15);
+  padding: 7px 8px;
+  text-align: center;
+  color: rgba(228, 234, 248, 0.85);
+}
+.score-table th { background: rgba(232, 184, 75, 0.1); color: #ffe08a; font-weight: 700; }
+.ai-name { color: #ffe08a; font-weight: 700; margin-right: 6px; }
+
+/* ============================================================
+   横屏：左右分栏（品牌在左、操作卡在右）
+   ============================================================ */
+@media (orientation: landscape) {
+  .lobby-root { padding: 2vh 4vw; }
+  .home-stage { flex-direction: row; justify-content: center; gap: 5vw; }
+  .brand-col { flex: 0 0 auto; }
+  .brand-tiles .bt { width: 44px; height: 62px; }
+  .entry-col { flex: 0 1 400px; }
+  .entry-card { padding: 16px 18px 12px; }
+  .lobby-input { padding: 10px 14px; margin-bottom: 8px; }
+  .nick-input { margin-bottom: 10px; }
+  .lobby-btn.big { min-height: 46px; padding: 11px; }
+  .brand-title { font-size: clamp(30px, 6vh, 46px); }
+  .info-modal { max-height: 82vh; }
+}
+
+/* 矮横屏（手机横过来高度吃紧）：进一步压缩 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .home-stage { gap: 3vw; }
+  .brand-tiles { margin-bottom: 0.8vh; }
+  .brand-tiles .bt { width: 32px; height: 45px; }
+  .brand-sub { display: none; }
+  .setting-strip { margin-bottom: 8px; }
+  .stepper { padding: 6px 10px; }
+  .step-btn { width: 32px; height: 32px; min-width: 32px; }
+  .step-val { font-size: 18px; }
+  .mode-tabs { margin-bottom: 8px; }
+  .mode-tab { padding: 8px 0; min-height: 40px; }
+  .lobby-hint, .lobby-status { margin-top: 6px; }
+  .entry-card { padding: 12px 16px 10px; }
+  .sub-actions { margin-top: -0.6vh; }
+}
 
 /* ---------- 桌面顶部 房号/座位条 ---------- */
 .online-room-bar {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>广东麻将 · 联机对战</title>
   <link rel="stylesheet" href="css/game.css?v=136">
-  <link rel="stylesheet" href="css/online.css?v=37">
+  <link rel="stylesheet" href="css/online.css?v=40">
 </head>
 <body>
 
@@ -15,85 +15,184 @@
   </div>
   <div class="screen-flash-fx" id="screenFlash" style="display:none;"></div>
 
-  <!-- ============ Lobby 区（入房前显示） ============ -->
+  <!-- ============ 首页 + 联机大厅（合并为单页，进房后切到牌桌） ============ -->
   <div class="lobby-root" id="lobby">
-    <!-- 顶部条：左侧返回首页 | 右侧房卡倒计时（有卡才显示） -->
-    <div class="lobby-top-bar">
-      <button class="back-home-btn mini" id="btnLobbyBackHome" type="button">← 返回首页</button>
-      <div class="card-countdown" id="cardCountdown" style="display:none;">
-        <span class="cd-label">房主卡到期</span>
-        <span class="cd-time" id="cdTime">--:--:--</span>
+    <!-- 隐藏管理员入口：左上角完全透明热区，点击进管理后台 -->
+    <button type="button" class="admin-secret" id="adminSecret" aria-hidden="true" tabindex="-1"></button>
+
+    <!-- 房主卡倒计时（有卡才显示） -->
+    <div class="card-countdown lobby-cd" id="cardCountdown" style="display:none;">
+      <span class="cd-label">房主卡到期</span>
+      <span class="cd-time" id="cdTime">--:--:--</span>
+    </div>
+
+    <div class="home-stage">
+      <!-- 品牌区（横屏在左，竖屏在顶） -->
+      <div class="brand-col">
+        <div class="brand-tiles" aria-hidden="true">
+          <img src="images/dong.png" class="bt t1" alt="">
+          <img src="images/zhong.png" class="bt t2" alt="">
+          <img src="images/fa.png" class="bt t3" alt="">
+        </div>
+        <h1 class="brand-title">广东麻将</h1>
+        <p class="brand-sub">自摸 · 鬼牌 · 包牌</p>
+      </div>
+
+      <!-- 操作区 -->
+      <div class="entry-col">
+        <div class="entry-card" id="entryCard">
+          <!-- 底分 / 游戏总分：步进器（隐藏 select 保留，联机逻辑照旧读 .value） -->
+          <div class="setting-strip">
+            <div class="stepper">
+              <span class="step-label">底分</span>
+              <div class="step-ctl">
+                <button type="button" class="step-btn" data-target="baseSelect" data-dir="-1" aria-label="减少底分">−</button>
+                <span class="step-val" id="baseVal">10</span>
+                <button type="button" class="step-btn" data-target="baseSelect" data-dir="1" aria-label="增加底分">＋</button>
+              </div>
+            </div>
+            <div class="stepper">
+              <span class="step-label">游戏总分</span>
+              <div class="step-ctl">
+                <button type="button" class="step-btn" data-target="totalSelect" data-dir="-1" aria-label="减少总分">−</button>
+                <span class="step-val" id="totalVal">200</span>
+                <button type="button" class="step-btn" data-target="totalSelect" data-dir="1" aria-label="增加总分">＋</button>
+              </div>
+            </div>
+          </div>
+          <select id="baseSelect" class="hidden-select" aria-hidden="true" tabindex="-1">
+            <option value="1">1 分</option>
+            <option value="5">5 分</option>
+            <option value="10" selected>10 分</option>
+            <option value="20">20 分</option>
+            <option value="50">50 分</option>
+            <option value="100">100 分</option>
+          </select>
+          <select id="totalSelect" class="hidden-select" aria-hidden="true" tabindex="-1">
+            <option value="50">50 分</option>
+            <option value="100">100 分</option>
+            <option value="200" selected>200 分</option>
+            <option value="300">300 分</option>
+            <option value="500">500 分</option>
+            <option value="800">800 分</option>
+            <option value="1000">1000 分</option>
+          </select>
+
+          <!-- 昵称（创建/加入共用） -->
+          <input type="text" id="nickInput" class="lobby-input nick-input" maxlength="6" placeholder="输入你的昵称">
+
+          <!-- 创建 / 加入 标签 -->
+          <div class="mode-tabs" role="tablist">
+            <button type="button" class="mode-tab active" data-pane="paneCreate">创建房间</button>
+            <button type="button" class="mode-tab" data-pane="paneJoin">加入房间</button>
+          </div>
+
+          <!-- 创建房间 -->
+          <div class="tab-pane" id="paneCreate">
+            <input type="text" id="pwdInput" class="lobby-input" maxlength="32" placeholder="输入房主卡密码">
+            <button class="lobby-btn primary big" id="btnCreateRoom" disabled>创建房间</button>
+            <div class="lobby-hint">系统生成 6 位房号 · 底分 <b id="showBase">10</b> · 总分 <b id="showTotal">200</b></div>
+          </div>
+
+          <!-- 加入房间 -->
+          <div class="tab-pane" id="paneJoin" style="display:none;">
+            <input type="text" id="joinRoomId" class="lobby-input room-id" maxlength="6" inputmode="numeric" placeholder="输入 6 位房号">
+            <button class="lobby-btn primary big" id="btnJoinRoom" disabled>加入房间</button>
+          </div>
+
+          <div class="lobby-status" id="lobbyStatus">正在连接服务器…</div>
+        </div>
+
+        <!-- 房内大厅：4 座位卡 + 房主操作（进房后显示） -->
+        <div class="room-card" id="roomCard" style="display:none;">
+          <div class="room-header">
+            <span class="room-id">房号：<b id="displayRoomId">------</b></span>
+            <span class="room-status-text" id="roomStatusText">等待玩家加入…</span>
+            <button class="lobby-btn small" id="btnLeaveRoom">退出房间</button>
+          </div>
+          <div class="seats-grid" id="seatsGrid">
+            <!-- 4 座位卡动态生成 -->
+          </div>
+          <div class="room-actions">
+            <button class="lobby-btn primary" id="btnStartRound" disabled>房主开局</button>
+            <button class="lobby-btn danger" id="btnAbortRound" style="display:none;">中止本局</button>
+          </div>
+        </div>
+
+        <!-- 次要入口 -->
+        <div class="sub-actions">
+          <a class="sub-link" id="practiceLink" href="#">单机练习</a>
+          <span class="sub-sep">·</span>
+          <button type="button" class="sub-link" id="btnMoreInfo">规则与说明</button>
+        </div>
       </div>
     </div>
 
-    <div class="lobby-card">
-      <h1 class="lobby-title">广东麻将 · 联机</h1>
+    <!-- ===== 规则与说明（不常用项收在这里） ===== -->
+    <div class="info-mask" id="infoMask">
+      <div class="info-modal">
+        <div class="info-head">
+          <h2>规则与说明</h2>
+          <button class="info-close" id="infoClose" type="button" aria-label="关闭">×</button>
+        </div>
+        <div class="info-body">
+          <!-- 出牌速度（仅单机练习用） -->
+          <section class="info-section">
+            <h3>出牌速度（单机练习）</h3>
+            <div class="speed-btns" id="speedBtns">
+              <button type="button" class="speed-btn" data-value="1">慢</button>
+              <button type="button" class="speed-btn" data-value="2">一般</button>
+              <button type="button" class="speed-btn" data-value="3">正常</button>
+              <button type="button" class="speed-btn" data-value="4">快</button>
+              <button type="button" class="speed-btn" data-value="5">超快</button>
+            </div>
+          </section>
 
-      <div class="lobby-row">
-        <label class="lobby-label">你的昵称</label>
-        <input type="text" id="nickInput" class="lobby-input" maxlength="6" placeholder="甲/乙/丙/丁…">
-      </div>
+          <section class="info-section">
+            <h3>规则简介</h3>
+            <ul class="dlist">
+              <li>自摸胡牌，三家分付；尖牌、放杠杠爆一家全包。</li>
+              <li>鬼牌（百搭）万能，可代替任何牌组成胡牌；鬼牌不能碰、不能杠。</li>
+              <li>尖牌包胡：被碰或明杠后单吊自摸，由碰杠提供者包付。</li>
+              <li>杠爆：杠牌后补摸的牌自摸胡牌；明杠杠爆由放杠者包付。</li>
+              <li>抢杠胡：别人补公杠时可以抢胡，由补杠者全包。</li>
+              <li>不设七对子，可胡十三幺。</li>
+            </ul>
+          </section>
 
-      <!-- 底分下拉 -->
-      <div class="lobby-row">
-        <label class="lobby-label">底  分</label>
-        <select class="lobby-select" id="baseSelect">
-          <option value="1">1 分</option>
-          <option value="5">5 分</option>
-          <option value="10" selected>10 分（推荐）</option>
-          <option value="20">20 分</option>
-          <option value="50">50 分</option>
-          <option value="100">100 分</option>
-        </select>
-      </div>
+          <section class="info-section">
+            <h3>分值计算（按当前底分 <b id="tipBase">10</b>）</h3>
+            <p class="score-tip">胡牌总得分 = 番数 × 底分；自摸三家平分，尖牌/放杠杠爆由一家付总得分。</p>
+            <p class="table-cap">胡牌番型得分</p>
+            <table class="score-table">
+              <thead><tr><th>番型</th><th>番数</th><th>自摸每家付</th><th>总得分</th></tr></thead>
+              <tbody id="fanTableBody"></tbody>
+            </table>
+            <p class="table-cap">杠牌得分</p>
+            <table class="score-table">
+              <thead><tr><th>杠法</th><th>得分方式</th><th>每次得分</th></tr></thead>
+              <tbody id="gangTableBody"></tbody>
+            </table>
+            <ul class="dlist">
+              <li>尖牌（碰杠后剩一张单吊）：放最后一碰杠者包胡牌分，杠分各算。</li>
+              <li>抢杠胡：补杠者包付全部胡牌分，本次杠分不算。</li>
+              <li>杠爆明杠：放杠者包付胡牌分加杠分；杠上杠包整串杠分。</li>
+              <li>荒庄（没人胡）：所有分数不计，包括杠分。</li>
+            </ul>
+          </section>
 
-      <!-- 游戏总分值下拉 -->
-      <div class="lobby-row">
-        <label class="lobby-label">游戏总分值</label>
-        <select class="lobby-select" id="totalSelect">
-          <option value="50">50 分</option>
-          <option value="100">100 分</option>
-          <option value="200" selected>200 分（推荐）</option>
-          <option value="300">300 分</option>
-          <option value="500">500 分</option>
-          <option value="800">800 分</option>
-          <option value="1000">1000 分</option>
-        </select>
-      </div>
-
-      <!-- 创建房间：必须输房主卡密码 -->
-      <div class="lobby-section">
-        <label class="lobby-label">创建房间（需房主卡密码）</label>
-        <input type="text" id="pwdInput" class="lobby-input" maxlength="32" placeholder="输入房主卡密码">
-        <button class="lobby-btn primary" id="btnCreateRoom" disabled>创建房间</button>
-        <div class="lobby-hint" id="createHint">系统生成 6 位房号 · 底分 <b id="showBase">10</b> · 总分 <b id="showTotal">200</b></div>
-      </div>
-
-      <!-- 红色大字提示（替代原来的"或"分隔） -->
-      <div class="lobby-landscape-tip">请打开手机横屏游戏</div>
-
-      <!-- 输入房号加入（永远不需要密码） -->
-      <div class="lobby-section">
-        <input type="text" id="joinRoomId" class="lobby-input room-id" maxlength="6" placeholder="输入 6 位房号">
-        <button class="lobby-btn primary" id="btnJoinRoom" disabled>加入房间</button>
-      </div>
-
-      <div class="lobby-status" id="lobbyStatus">正在连接服务器…</div>
-    </div>
-
-    <!-- 房内大厅：4 座位卡 + 房主操作 -->
-    <div class="room-card" id="roomCard" style="display:none;">
-      <div class="room-header">
-        <span class="room-id">房号：<b id="displayRoomId">------</b></span>
-        <span class="room-status-text" id="roomStatusText">等待玩家加入…</span>
-        <button class="lobby-btn small" id="btnLeaveRoom">退出房间</button>
-      </div>
-      <div class="seats-grid" id="seatsGrid">
-        <!-- 4 座位卡动态生成 -->
-      </div>
-      <div class="room-actions">
-        <button class="lobby-btn primary" id="btnStartRound" disabled>房主开局</button>
-        <button class="lobby-btn danger" id="btnAbortRound" style="display:none;">中止本局</button>
+          <section class="info-section">
+            <h3>电脑对手性格（单机）</h3>
+            <ul class="dlist ai-list">
+              <li><span class="ai-name">保守型</span>少碰少杠，小番不胡、要够番才胡，防守最稳。</li>
+              <li><span class="ai-name">普通型</span>中规中矩，碰杠胡都看情况，攻守均衡。</li>
+              <li><span class="ai-name">激进型</span>爱碰爱杠，有胡就胡，攻势最猛。</li>
+              <li><span class="ai-name">贪番型</span>一心做大牌，偏爱留字牌和幺九牌。</li>
+              <li><span class="ai-name">速攻型</span>不做字牌，尽快听牌胡牌，小胡快跑。</li>
+              <li><span class="ai-name">鬼牌型</span>围绕鬼牌做牌，善用百搭。</li>
+            </ul>
+          </section>
+        </div>
       </div>
     </div>
   </div>
@@ -268,5 +367,6 @@
   <script src="js/mahjong.js?v=39"></script>
   <script src="js/sounds.js?v=35"></script>
   <script src="js/online.js?v=30"></script>
+  <script src="js/home-ui.js?v=3"></script>
 </body>
 </html>
