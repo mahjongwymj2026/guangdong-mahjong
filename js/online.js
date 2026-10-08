@@ -73,6 +73,18 @@
       var el = document.getElementById('lobbyStatus');
       if (el) el.textContent = msg || '';
     },
+    // 聊天：按方位显示消息
+    appendChat: function (seat, text) {
+      var log = document.getElementById('chatLog');
+      if (!log || !text) return;
+      var DIR = ['南', '东', '北', '西'];
+      var dir = DIR[seat] || ('座' + seat);
+      var msg = document.createElement('div');
+      msg.className = 'chat-msg';
+      msg.innerHTML = '<span class="chat-dir">' + dir + '：</span><span class="chat-text">' + escapeHtml(text) + '</span>';
+      log.appendChild(msg);
+      log.scrollTop = log.scrollHeight;
+    },
     // 房主卡倒计时：服务器给一个过期时间戳（ms），客户端每秒刷新显示
     _cdInterval: null,
     updateCardCountdown: function (expiryTs) {
@@ -341,6 +353,11 @@
               // 不进 _pendingSfx 机制，避免吃掉 discard 的出牌声
               break;
             }
+            // 聊天消息：立即显示，不进1秒延迟的动作事件流程
+            if (m.evt === 'chat') {
+              ui.appendChat(m.detail.seat, m.detail.text);
+              break;
+            }
             // 动作事件统一延迟1秒：画面+声音同时出现，给语音预加载留时间，节奏均匀
             var evtName = m.evt, evtDetail = m.detail;
             setTimeout(function () {
@@ -607,6 +624,7 @@
         ui.showTable();
       }
       render.dirLayer();   // 东南西北水印根据自己座位旋转
+      render.sideScores(); // 右侧面板四家分数
       render.turnInfo();
       render.deckInfo();
       render.roundInfo();
@@ -715,23 +733,36 @@
 
     seatInfos: function () {
       var s = online.cur; if (!s || !s.players) return;
-      var roomSeats = online.room && online.room.seats;
       for (var i = 0; i < 4; i++) {
-        var p = s.players[i];
-        if (!p) continue;
         // 阶段E-2：DOM id 是固定屏幕位置（seat0=底部/自己, seat1=右, seat2=上, seat3=左）
         // 真实座位号 i → 屏幕位置 relSeat(i) → 对应 DOM
         var r = relSeat(i);
-        var nameEl = document.getElementById(SEAT_BOXES.seat[r]);
-        var ptsEl = document.getElementById(SEAT_BOXES.pts[r]);
-        // 机器人座位显示机器人名字
-        var isBot = roomSeats && roomSeats[i] && roomSeats[i].isBot;
-        if (nameEl) nameEl.textContent = isBot ? (roomSeats[i].name || seatName(i)) : (p.name || seatName(i));
-        if (ptsEl) ptsEl.textContent = p.points;
         // 阶段D步骤3：本局电脑接管角标
         var autoEl = document.getElementById(SEAT_BOXES.auto[r]);
         if (autoEl) autoEl.style.display = (s.takenOver && s.takenOver[i]) ? 'inline-block' : 'none';
       }
+    },
+
+    // 右侧面板：四家方位 + 名字 + 分数
+    sideScores: function () {
+      var s = online.cur; if (!s || !s.players) return;
+      var box = document.getElementById('sideScores');
+      if (!box) return;
+      var roomSeats = online.room && online.room.seats;
+      var DIR = ['南', '东', '北', '西'];
+      var html = '';
+      for (var i = 0; i < 4; i++) {
+        var p = s.players[i];
+        if (!p) continue;
+        var isBot = roomSeats && roomSeats[i] && roomSeats[i].isBot;
+        var nm = isBot ? (roomSeats[i].name || ('机器人' + (i + 1))) : (p.name || ('玩家' + (i + 1)));
+        html += '<div class="score-row">' +
+          '<span class="score-dir">' + DIR[i] + '</span>' +
+          '<span class="score-name">' + escapeHtml(nm) + '</span>' +
+          '<span class="score-pts">' + p.points + '</span>' +
+          '</div>';
+      }
+      box.innerHTML = html;
     },
 
     myHand: function () {
@@ -1582,6 +1613,28 @@
     if (btnExpiredBack) btnExpiredBack.addEventListener('click', action.onExpiredBack);
     if (btnBackHomeTop) btnBackHomeTop.addEventListener('click', action.onBackHome);
     if (btnLobbyBackHome) btnLobbyBackHome.addEventListener('click', action.onBackHome);
+
+    // 右侧分数/聊天面板：展开/收起
+    var sideToggle = document.getElementById('sideToggle');
+    var sideBody = document.getElementById('sideBody');
+    if (sideToggle && sideBody) {
+      sideToggle.addEventListener('click', function () {
+        sideBody.style.display = (sideBody.style.display === 'none') ? 'flex' : 'none';
+      });
+    }
+    // 聊天发送
+    var chatInput = document.getElementById('chatInput');
+    var chatSend = document.getElementById('chatSend');
+    function sendChat() {
+      var txt = chatInput ? chatInput.value.trim() : '';
+      if (!txt) return;
+      net.send('chat', { text: txt });
+      if (chatInput) chatInput.value = '';
+    }
+    if (chatSend) chatSend.addEventListener('click', sendChat);
+    if (chatInput) chatInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); sendChat(); }
+    });
 
     // 输入框 Enter 触发对应按钮
     if (nickInput) nickInput.addEventListener('keydown', function (e) {

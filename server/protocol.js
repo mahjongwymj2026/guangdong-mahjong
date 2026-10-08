@@ -20,7 +20,8 @@ var C = {
   RECOVER_SESSION: 'recover_session',
   ADD_BOT: 'add_bot',
   REMOVE_BOT: 'remove_bot',
-  CANCEL_TAKEOVER: 'cancel_takeover'
+  CANCEL_TAKEOVER: 'cancel_takeover',
+  CHAT: 'chat'
 };
 
 // ---------- 服务端 → 客户端 消息类型 ----------
@@ -50,7 +51,8 @@ var EVT = {
   CLAIM_OPTIONS: 'claim_options',
   ROOM_STATE: 'room_state',
   AUTO_ACTION: 'auto_action',       // 阶段D 步骤3：服务端代出/代 pass 提示
-  ROOM_EXPIRED: 'room_expired'      // 房主卡 6 小时到期，房间关闭
+  ROOM_EXPIRED: 'room_expired',     // 房主卡 6 小时到期，房间关闭
+  CHAT: 'chat'                      // 聊天消息
 };
 
 // ---------- 错误码 ----------
@@ -133,6 +135,9 @@ function validateClient(msg) {
     case C.RECOVER_SESSION:
       if (!isStr(msg.oldSessionId)) return bad(ERR.BAD_PAYLOAD, 'oldSessionId 必须是字符串');
       return ok({ oldSessionId: msg.oldSessionId, name: msg.name });
+    case C.CHAT:
+      if (!isStr(msg.text) || msg.text.length > 100) return bad(ERR.BAD_PAYLOAD, '聊天内容 1-100 字');
+      return ok({ text: msg.text.trim() });
     default:
       return bad(ERR.BAD_PAYLOAD, '未知消息类型: ' + t);
   }

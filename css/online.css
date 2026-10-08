@@ -1037,6 +1037,138 @@
 .lobby-select:focus { border-color: #ffd54f; }
 .lobby-select option { background: #1a2e1c; color: #ffe082; }
 
+/* ============ 右侧分数/聊天面板 ============ */
+.side-panel {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 80;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+/* 长条形切换按钮：竖排文字，贴在屏幕右边缘 */
+.side-toggle {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  padding: 14px 6px;
+  font-size: 14px;
+  color: #ffe082;
+  background: linear-gradient(90deg, rgba(20,30,20,0.85), rgba(40,55,35,0.9));
+  border: 1px solid #3a5a3a;
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+}
+.side-toggle:active { background: rgba(255,213,79,0.2); }
+
+/* 展开后的面板主体 */
+.side-body {
+  width: 220px;
+  max-height: 70vh;
+  background: rgba(15, 22, 16, 0.95);
+  border: 1px solid #3a5a3a;
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: -4px 0 16px rgba(0,0,0,0.5);
+}
+/* 分数表 */
+.side-scores {
+  padding: 10px 12px;
+  border-bottom: 1px solid #2a3a2a;
+  flex-shrink: 0;
+}
+.side-scores .score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 13px;
+}
+.side-scores .score-dir {
+  color: #ffd54f;
+  font-weight: bold;
+  min-width: 22px;
+}
+.side-scores .score-name {
+  flex: 1;
+  color: #e0e0e0;
+  margin: 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+.side-scores .score-pts {
+  color: #81c784;
+  font-weight: bold;
+  min-width: 48px;
+  text-align: right;
+}
+/* 聊天记录 */
+.side-chat-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.side-chat-log .chat-msg {
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+.side-chat-log .chat-dir {
+  color: #ffd54f;
+  font-weight: bold;
+  margin-right: 4px;
+}
+.side-chat-log .chat-text { color: #e0e0e0; }
+/* 聊天输入区 */
+.side-chat-input {
+  display: flex;
+  padding: 8px;
+  border-top: 1px solid #2a3a2a;
+  flex-shrink: 0;
+  gap: 6px;
+}
+.side-chat-input input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #3a5a3a;
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+  min-width: 0;
+}
+.side-chat-input input:focus { border-color: #ffd54f; }
+.side-chat-input button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #ffd54f;
+  color: #1a2e1c;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.side-chat-input button:active { background: #ffca28; }
+
+/* 竖屏：面板更窄 */
+@media (orientation: portrait) {
+  .side-body { width: 180px; }
+}
+
 /* 红色大字横屏提示 */
 .lobby-landscape-tip {
   text-align: center;

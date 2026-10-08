@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>广东麻将 · 联机对战</title>
   <link rel="stylesheet" href="css/game.css?v=136">
-  <link rel="stylesheet" href="css/online.css?v=40">
+  <link rel="stylesheet" href="css/online.css?v=41">
 </head>
 <body>
 
@@ -218,9 +218,7 @@
     <!-- 对家 (seat 2) - top -->
     <div class="seat-top">
       <div class="seat-info">
-        <span class="seat-name" id="seat2Name">对家</span>
         <span class="auto-tag" id="seat2Auto" style="display:none;">托管中</span>
-        <span class="seat-points" id="seat2Points">1000</span>
       </div>
       <div class="top-main">
         <div class="seat-hand-h" id="topHand"></div>
@@ -232,9 +230,7 @@
     <!-- 左家 (seat 3) - left -->
     <div class="seat-left">
       <div class="seat-info">
-        <span class="seat-name" id="seat3Name">左家</span>
         <span class="auto-tag" id="seat3Auto" style="display:none;">托管中</span>
-        <span class="seat-points" id="seat3Points">1000</span>
       </div>
       <div class="left-melds" id="leftMelds" style="display:none;"></div>
       <div class="left-body">
@@ -246,9 +242,7 @@
     <!-- 右家 (seat 1) - right -->
     <div class="seat-right">
       <div class="seat-info">
-        <span class="seat-name" id="seat1Name">右家</span>
         <span class="auto-tag" id="seat1Auto" style="display:none;">托管中</span>
-        <span class="seat-points" id="seat1Points">1000</span>
       </div>
       <div class="right-body">
         <div class="pond pond-right" id="rightPond"></div>
@@ -286,6 +280,19 @@
         </div>
       </div>
       <div class="center-wall"></div>
+    </div>
+
+    <!-- 右侧分数/聊天面板 -->
+    <div class="side-panel" id="sidePanel">
+      <button type="button" class="side-toggle" id="sideToggle">分数 / 聊天</button>
+      <div class="side-body" id="sideBody" style="display:none;">
+        <div class="side-scores" id="sideScores"></div>
+        <div class="side-chat-log" id="chatLog"></div>
+        <div class="side-chat-input">
+          <input type="text" id="chatInput" maxlength="100" placeholder="说点什么…" autocomplete="off">
+          <button type="button" id="chatSend">发送</button>
+        </div>
+      </div>
     </div>
 
     <!-- 自己弃牌区 -->
@@ -366,7 +373,7 @@
 
   <script src="js/mahjong.js?v=39"></script>
   <script src="js/sounds.js?v=35"></script>
-  <script src="js/online.js?v=31"></script>
+  <script src="js/online.js?v=32"></script>
   <script src="js/home-ui.js?v=3"></script>
 </body>
 </html>

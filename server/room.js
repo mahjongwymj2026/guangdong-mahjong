@@ -268,8 +268,15 @@ Room.prototype.dispatch = function (sessionId, type, payload) {
   if (type === C.KONG) return this._doKong(sessionId, seat, payload);
   if (type === C.PASS) return this._doPass(sessionId, seat);
   if (type === C.HU) return this._doHu(sessionId, seat);
+  if (type === C.CHAT) return this._doChat(sessionId, seat, payload.text);
 
   return { ok: false, code: ERR.BAD_PAYLOAD, msg: '未知动作 ' + type };
+};
+
+// 聊天：广播给全房，带座位号
+Room.prototype._doChat = function (sessionId, seat, text) {
+  this.broadcastEvent(EVT.CHAT, { seat: seat, text: text });
+  return { ok: true };
 };
 
 Room.prototype._doTakeSeat = function (sessionId, seatIdx) {
