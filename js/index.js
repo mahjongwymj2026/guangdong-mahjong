@@ -47,7 +47,7 @@
   });
 
   // ---------- 详细分值表（随底分实时计算）----------
-  // 番型：番数 = 自摸三家付款总额；每番 = 1 个底分
+  // 牌型：牌型分 = 自摸三家付款总额；每牌型分 = 1 个底分
   var FAN_ROWS = [
     { name: '普通自摸 / 抢杠胡', fan: 6 },
     { name: '对对糊', fan: 12 },
@@ -63,10 +63,10 @@
     var fanHtml = '';
     FAN_ROWS.forEach(function(row) {
       var total = row.fan * b;           // 赢家总收入
-      var per = Math.round(total / 3);   // 自摸每家付（番数都是3的倍数，无余数）
+      var per = Math.round(total / 3);   // 自摸每家付（牌型分都是3的倍数，无余数）
       fanHtml += '<tr>'
         + '<td class="t-name">' + row.name + '</td>'
-        + '<td>' + row.fan + ' 番</td>'
+        + '<td>' + row.fan + ' 分</td>'
         + '<td class="t-hot">' + per + ' 分</td>'
         + '<td class="t-hot">' + total + ' 分</td>'
         + '</tr>';

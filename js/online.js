@@ -587,7 +587,7 @@
             if (window.snd.gang) setTimeout(function () { window.snd.gang(); }, 350);
             break;
           case 'hu':
-            // 胡牌人声：普通胡喊"自摸"，特殊胡牌喊番型名（对对糊/清一色/清对/幺九/十三幺）
+            // 胡牌人声：普通胡喊"自摸"，特殊胡牌喊牌型名（对对糊/清一色/清对/幺九/十三幺）
             var ed = detail.endData || (online.cur && online.cur.endData) || null;
             var fanName = ed ? ed.name : null;
             var fanVoiceName = fanName && window.snd.FAN_VOICES ? window.snd.FAN_VOICES[fanName] : null;

@@ -443,13 +443,13 @@ function checkAllZwords(hand, melds, ghost) {
   return allZ;
 }
 
-// 计算最佳番型
-// 返回 { fan: 番数, name: 番名 }
-// 番数 = 该番型在底分1分时的总分（自摸三家付总额）
-// 每家应付 = 番数 × 底分 / 3，赢家收 = 番数 × 底分
-// 番型优先级（从高到低，与 Excel「各种分」计分表一致）:
+// 计算最佳牌型
+// 返回 { fan: 牌型分, name: 牌型名 }
+// 牌型分 = 该牌型在底分1分时的总分（自摸三家付总额）
+// 每家应付 = 牌型分 × 底分 / 3，赢家收 = 牌型分 × 底分
+// 牌型优先级（从高到低，与 Excel「各种分」计分表一致）:
 // 十三幺48 = 全翻板48 > 幺九牌36 = 清对36 > 清一色24 > 对对糊12 > 普通自摸6
-// 特殊规则：碰杠过鬼牌（副露中有鬼牌）的手牌，番型最高只到对对糊
+// 特殊规则：碰杠过鬼牌（副露中有鬼牌）的手牌，牌型最高只到对对糊
 function bestFanEx(hand, melds, ghost, isSelfDraw, isRobKong) {
   // 碰杠过鬼牌 → 鬼牌副露不算清一色/全翻板/字牌等高档番，最高对对糊
   var hasGhostMeld = false;
@@ -517,7 +517,7 @@ function checkKongs(hand, lastDraw, ghost) {
   // 公杠：已碰的牌+摸到第4张（lastDraw为刚摸到的牌）
   
   Object.keys(counts).forEach(function (t) {
-    // 鬼牌也可杠（按普通杠算钱；但碰杠过鬼牌的手牌番型受限，见 bestFanEx）
+    // 鬼牌也可杠（按普通杠算钱；但碰杠过鬼牌的手牌牌型受限，见 bestFanEx）
     var c = counts[t];
     if (c >= 4) {
       kongs.push({ kind: 'ag', tile: t }); // 暗杠

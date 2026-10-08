@@ -92,7 +92,7 @@ function playVoice(name) {
   }
 }
 
-// 番型语音映射
+// 牌型语音映射
 var FAN_VOICES = {
   '普通自摸': 'zimo',
   '对对糊': 'duidui',
@@ -137,7 +137,7 @@ function zimo() {
   setTimeout(function () { tone(659, 0.15, 'sine', 0.12); }, 160);
 }
 
-// 番型语音
+// 牌型语音
 function fanVoice(fanName) {
   var voice = FAN_VOICES[fanName];
   if (voice) playVoice(voice);

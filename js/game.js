@@ -35,7 +35,7 @@ var game = {
   lastClaimForBao: null, // 尖牌包胡追踪 {provider,seat}
   baoFirstDraw: false,   // 碰/明杠当次内部出牌不判定单吊包（保护标志）
   speedLevel: 2,
-  baseScore: 3,          // 底分（番数 × 底分）
+  baseScore: 3,          // 底分（牌型分 × 底分）
   scoreHistory: [],
   roundNum: 1,
   deckRemain: 0,
@@ -935,7 +935,7 @@ var game = {
       var c = { seat: i, peng: false, kong: false, kind: null, tile: tile, from: fromSeat };
       // 规则：只能自摸或抢杠胡，别人打出的普通牌只能碰/明杠，不能胡
       // 同圈放弃过该牌 → 不能再碰（杠不受影响）
-      // 鬼牌打出来与普通牌一样可被碰/杠（番型限制在 bestFanEx 处理）
+      // 鬼牌打出来与普通牌一样可被碰/杠（牌型限制在 bestFanEx 处理）
       var passedPeng = this.passedClaims.some(function(pc) { return pc.seat === i && pc.tile === tile; });
       if (!passedPeng && window.mj.canPeng(evalHand, tile, this.ghost)) c.peng = true;
       var cnt = evalHand.filter(function(t) { return t === tile; }).length;
@@ -1402,7 +1402,7 @@ var game = {
       winTile = winner === 0 ? this.lastDraw : (p._lastDraw || null);
     }
 
-    // 评估番型（自摸时把刚摸到的牌也算进手牌，抢杠胡时把胡牌加入评估）
+    // 评估牌型（自摸时把刚摸到的牌也算进手牌，抢杠胡时把胡牌加入评估）
     var evalHand = p.hand.slice();
     if (!isSelfDraw) {
       evalHand = evalHand.concat([winTile]);

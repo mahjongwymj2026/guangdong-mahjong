@@ -194,7 +194,7 @@ MahjongEngine.prototype.endRound = function (winner, options) {
     winTile = p.lastDraw || null;
   }
 
-  // 评估番型：自摸补 lastDraw（所有 seat）；抢杠补 winTile
+  // 评估牌型：自摸补 lastDraw（所有 seat）；抢杠补 winTile
   var evalHand = p.hand.slice();
   if (!isSelfDraw) {
     evalHand = evalHand.concat([winTile]);
@@ -532,7 +532,7 @@ MahjongEngine.prototype.getClaimants = function (tile, fromSeat) {
     var evalHand = this.evalHandFor(i);
     var c = { seat: i, peng: false, kong: false, kind: null, tile: tile, from: fromSeat };
     // 同圈放弃过该牌的碰 → 不能再碰（杠不受此限制）
-    // 鬼牌打出来与普通牌一样可被碰/杠（番型限制在 bestFanEx 处理）
+    // 鬼牌打出来与普通牌一样可被碰/杠（牌型限制在 bestFanEx 处理）
     var passedPeng = this.passedClaims.some(function (pc) {
       return pc.seat === i && pc.tile === tile;
     });
