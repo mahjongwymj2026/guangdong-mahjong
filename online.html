@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>广东麻将 · 联机对战</title>
   <link rel="stylesheet" href="css/game.css?v=137">
-  <link rel="stylesheet" href="css/online.css?v=47">
+  <link rel="stylesheet" href="css/online.css?v=48">
 </head>
 <body>
 
@@ -295,17 +295,21 @@
     <div class="side-panel" id="sidePanel">
       <button type="button" class="side-toggle" id="sideToggle">分数 / 聊天</button>
       <div class="side-body" id="sideBody" style="display:none;">
-        <div class="side-round-info" id="sideRoundInfo">
-          <div class="ri-row"><span class="ri-label">底分</span><span class="ri-val" id="riBase">-</span></div>
-          <div class="ri-row"><span class="ri-label">总分</span><span class="ri-val" id="riInit">-</span></div>
+        <div class="side-left-col">
+          <div class="side-round-info" id="sideRoundInfo">
+            <div class="ri-row"><span class="ri-label">底分</span><span class="ri-val" id="riBase">-</span></div>
+            <div class="ri-row"><span class="ri-label">总分</span><span class="ri-val" id="riInit">-</span></div>
+          </div>
+          <div class="side-scores" id="sideScores"></div>
+          <div class="side-close-hint" id="sideCloseHint">点此退出聊天</div>
         </div>
-        <div class="side-scores" id="sideScores"></div>
-        <div class="side-chat-log" id="chatLog"></div>
-        <div class="side-chat-input">
-          <input type="text" id="chatInput" maxlength="100" placeholder="说点什么…" autocomplete="off">
-          <button type="button" id="chatSend">发送</button>
+        <div class="side-right-col">
+          <div class="side-chat-log" id="chatLog"></div>
+          <div class="side-chat-input">
+            <input type="text" id="chatInput" maxlength="100" placeholder="说点什么…" autocomplete="off">
+            <button type="button" id="chatSend">发送</button>
+          </div>
         </div>
-        <div class="side-close-hint" id="sideCloseHint">点此退出聊天</div>
       </div>
     </div>
 
@@ -405,7 +409,7 @@
 
   <script src="js/mahjong.js?v=40"></script>
   <script src="js/sounds.js?v=36"></script>
-  <script src="js/online.js?v=39"></script>
+  <script src="js/online.js?v=40"></script>
   <script src="js/home-ui.js?v=4"></script>
 </body>
 </html>

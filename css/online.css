@@ -1092,17 +1092,32 @@
 }
 .side-toggle:active { background: rgba(255,213,79,0.2); }
 
-/* 展开后的面板主体 */
+/* 展开后的面板主体：左右两栏 */
 .side-body {
-  width: 220px;
+  width: 380px;
   max-height: 70vh;
   background: rgba(15, 22, 16, 0.95);
   border: 1px solid #3a5a3a;
   border-radius: 10px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+/* 左栏：底分/总分/分数/退出 */
+.side-left-col {
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #2a3a2a;
+  overflow-y: auto;
+}
+/* 右栏：聊天记录/输入 */
+.side-right-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 /* 当前牌局底分/总分信息 */
 .side-round-info {
@@ -1129,6 +1144,7 @@
   border-top: 1px solid #2a3a2a;
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
+  margin-top: auto;
 }
 .side-close-hint:active { color: #ffd54f; }
 /* 分数表 */
@@ -1171,6 +1187,7 @@
   padding: 8px 12px;
   font-size: 13px;
   line-height: 1.6;
+  min-height: 0;
 }
 .side-chat-log .chat-msg {
   margin-bottom: 4px;
@@ -1348,6 +1365,11 @@
 }
 .chat-voice-msg:active { background: rgba(255, 213, 79, 0.2); }
 .chat-voice-msg.replaying { animation: voice-wave 0.5s ease-in-out infinite alternate; }
+
+/* 其他人的语音按钮：完全透明（只有播放动画时才显示） */
+.voice-btn-wrap:not(#voiceBtn0) .voice-btn { opacity: 0; }
+/* 播放时显示 */
+.voice-btn-wrap:not(#voiceBtn0) .voice-btn.playing { opacity: 1; }
 
 /* ---------- 横屏定位 ---------- */
 @media (orientation: landscape) {

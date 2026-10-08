@@ -66,10 +66,13 @@
       voice.showButtons();
       ui.checkOrientation();
     },
-    // 横屏检测：竖屏时显示旋转提示
+    // 横屏检测：只在游戏界面（牌桌）显示竖屏提示，大厅不提示
     checkOrientation: function () {
       var ov = document.getElementById('rotateOverlay');
       if (!ov) return;
+      var gameRoot = document.getElementById('gameRoot');
+      var inGame = gameRoot && gameRoot.style.display !== 'none';
+      if (!inGame) { ov.classList.remove('show'); return; }
       var isPortrait = window.innerHeight > window.innerWidth;
       ov.classList.toggle('show', isPortrait);
     },
