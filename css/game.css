@@ -840,9 +840,9 @@
   text-align: center;
   overflow-y: auto;
 }
-.end-modal .m-title { font-size: 3.4vh; margin-bottom: 0.6vh; }
-.end-modal .m-fan { font-size: 2vh; }
-.end-modal .m-paytext { font-size: 1.8vh; margin-top: 0.5vh; }
+.end-modal .m-title { font-size: 4.6vh; margin-bottom: 0.8vh; }
+.end-modal .m-fan { font-size: 2.8vh; }
+.end-modal .m-paytext { font-size: 2.4vh; margin-top: 0.6vh; }
 
 /* —— 4 家结算表 —— */
 .m-table { margin-top: 1.5vh; }
@@ -850,7 +850,7 @@
   display: grid;
   grid-template-columns: 7.5vh 1fr 9vh 9vh;
   gap: 1vh;
-  font-size: 1.5vh;
+  font-size: 2.2vh;
   color: #ffd54f;
   padding-bottom: 0.8vh;
   border-bottom: 1px solid rgba(224,193,96,0.25);
@@ -874,7 +874,7 @@
 }
 
 .mt-name { display: flex; flex-direction: row; align-items: center; gap: 0.4vh; }
-.mt-name-text { font-size: 2.6vh; color: #fff; font-weight: bold; }
+.mt-name-text { font-size: 3vh; color: #fff; font-weight: bold; }
 .mt-winner-badge {
   background: linear-gradient(135deg, #e0c160, #c9a227);
   color: #2a1f00;
@@ -885,7 +885,7 @@
 }
 
 .mt-pay, .mt-cum { text-align: right; }
-.mt-pay-num, .mt-cum-num { font-size: 2.2vh; font-weight: bold; }
+.mt-pay-num, .mt-cum-num { font-size: 2.8vh; font-weight: bold; }
 .mt-pay-num.pos { color: #ff6b6b; }
 .mt-pay-num.neg { color: #7fd37f; }
 .mt-pay-num.zero, .mt-cum-num { color: #ccc; }
@@ -899,7 +899,7 @@
   border: 1px solid rgba(255,213,79,0.2);
 }
 .m-detail-title {
-  font-size: 1.6vh;
+  font-size: 2.6vh;
   color: #ffd54f;
   font-weight: bold;
   text-align: center;
@@ -911,7 +911,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.5vh 0.2vh;
-  font-size: 1.5vh;
+  font-size: 2.2vh;
   border-bottom: 1px dashed rgba(255,255,255,0.06);
 }
 .dl-row:last-child { border-bottom: none; }
@@ -919,7 +919,7 @@
 .dl-row .dl-left .hl { color: #ffd54f; font-weight: bold; }
 .dl-row .dl-left .tag {
   display: inline-block;
-  font-size: 1.2vh;
+  font-size: 1.8vh;
   padding: 0.1vh 0.8vh;
   border-radius: 0.4vh;
   margin-right: 0.5vh;
@@ -930,7 +930,7 @@
 .tag-bg { background: #1565c0; color: #fff; }
 .tag-mg { background: #c62828; color: #fff; }
 .tag-hu { background: #2e7d32; color: #fff; }
-.dl-row .dl-right { font-weight: bold; font-size: 1.6vh; white-space: nowrap; }
+.dl-row .dl-right { font-weight: bold; font-size: 2.4vh; white-space: nowrap; }
 .dl-row .dl-right.pos { color: #ff6b6b; }
 .dl-row .dl-right.neg { color: #7fd37f; }
 
@@ -942,7 +942,7 @@
   border-radius: 1vh;
   border: 1px solid rgba(255,255,255,0.08);
 }
-.m-hands-title { font-size: 1.5vh; color: #ffd54f; font-weight: bold; margin-bottom: 1vh; }
+.m-hands-title { font-size: 2.4vh; color: #ffd54f; font-weight: bold; margin-bottom: 1vh; }
 .mh-row { margin-bottom: 1vh; }
 .mh-row:last-child { margin-bottom: 0; }
 .mh-label { font-size: 2.8vh; color: #ddd; margin-bottom: 0.6vh; display: flex; align-items: center; gap: 0.6vh; }
@@ -1073,8 +1073,8 @@
 
 /* —— 底部按钮 —— */
 .end-modal .m-btns { margin-top: 2vh; flex-shrink: 0; }
-.end-modal .m-roomid { font-size: 1.6vh; color: #c0c0c0; text-align: right; margin-top: 1vh; letter-spacing: 1px; }
-.end-modal .m-btns .btn { font-size: 2.6vh; padding: 0.8vh 1.8vh; line-height: 1.2; background: linear-gradient(135deg, #555, #333); color: #fff; font-weight: bold; }
+.end-modal .m-roomid { font-size: 1.8vh; color: #c0c0c0; text-align: right; margin-top: 1vh; letter-spacing: 1px; }
+.end-modal .m-btns .btn { font-size: 3.4vh; padding: 1vh 2vh; line-height: 1.2; background: linear-gradient(135deg, #555, #333); color: #fff; font-weight: bold; }
 .end-modal .m-btns .btn-primary { background: linear-gradient(135deg, #b71c1c, #d32f2f); color: #fff; font-weight: bold; }
 .end-modal .m-btns .btn-secondary { background: linear-gradient(135deg, #555, #333); color: #fff; font-weight: bold; }
 .m-title { font-size: 3vh; color: #ffd54f; font-weight: bold; margin-bottom: 1.5vh; }
