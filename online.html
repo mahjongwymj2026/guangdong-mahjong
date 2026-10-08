@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>广东麻将 · 联机对战</title>
   <link rel="stylesheet" href="css/game.css?v=136">
-  <link rel="stylesheet" href="css/online.css?v=42">
+  <link rel="stylesheet" href="css/online.css?v=43">
 </head>
 <body>
 
@@ -62,10 +62,23 @@
           </div>
           <select id="baseSelect" class="hidden-select" aria-hidden="true" tabindex="-1">
             <option value="1">1 分</option>
+            <option value="2">2 分</option>
+            <option value="3">3 分</option>
+            <option value="4">4 分</option>
             <option value="5">5 分</option>
+            <option value="6">6 分</option>
+            <option value="7">7 分</option>
+            <option value="8">8 分</option>
+            <option value="9">9 分</option>
             <option value="10" selected>10 分</option>
             <option value="20">20 分</option>
+            <option value="30">30 分</option>
+            <option value="40">40 分</option>
             <option value="50">50 分</option>
+            <option value="60">60 分</option>
+            <option value="70">70 分</option>
+            <option value="80">80 分</option>
+            <option value="90">90 分</option>
             <option value="100">100 分</option>
           </select>
           <select id="totalSelect" class="hidden-select" aria-hidden="true" tabindex="-1">
@@ -286,12 +299,17 @@
     <div class="side-panel" id="sidePanel">
       <button type="button" class="side-toggle" id="sideToggle">分数 / 聊天</button>
       <div class="side-body" id="sideBody" style="display:none;">
+        <div class="side-round-info" id="sideRoundInfo">
+          <div class="ri-row"><span class="ri-label">底分</span><span class="ri-val" id="riBase">-</span></div>
+          <div class="ri-row"><span class="ri-label">总分</span><span class="ri-val" id="riInit">-</span></div>
+        </div>
         <div class="side-scores" id="sideScores"></div>
         <div class="side-chat-log" id="chatLog"></div>
         <div class="side-chat-input">
           <input type="text" id="chatInput" maxlength="100" placeholder="说点什么…" autocomplete="off">
           <button type="button" id="chatSend">发送</button>
         </div>
+        <div class="side-close-hint" id="sideCloseHint">点此退出聊天</div>
       </div>
     </div>
 
@@ -373,7 +391,7 @@
 
   <script src="js/mahjong.js?v=40"></script>
   <script src="js/sounds.js?v=36"></script>
-  <script src="js/online.js?v=33"></script>
+  <script src="js/online.js?v=34"></script>
   <script src="js/home-ui.js?v=4"></script>
 </body>
 </html>

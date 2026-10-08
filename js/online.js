@@ -625,9 +625,9 @@
       }
       render.dirLayer();   // 东南西北水印根据自己座位旋转
       render.sideScores(); // 右侧面板四家分数
+      render.roundInfo();  // 右侧面板底分总分
       render.turnInfo();
       render.deckInfo();
-      render.roundInfo();
       render.ghostDisplay();
       render.seatInfos();
       render.myHand();
@@ -763,6 +763,15 @@
           '</div>';
       }
       box.innerHTML = html;
+    },
+
+    // 右侧面板：当前牌局底分 + 总分
+    roundInfo: function () {
+      var s = online.cur; if (!s) return;
+      var baseEl = document.getElementById('riBase');
+      var initEl = document.getElementById('riInit');
+      if (baseEl) baseEl.textContent = s.baseScore || '-';
+      if (initEl) initEl.textContent = s.initScore || '-';
     },
 
     myHand: function () {
@@ -1617,9 +1626,16 @@
     // 右侧分数/聊天面板：展开/收起
     var sideToggle = document.getElementById('sideToggle');
     var sideBody = document.getElementById('sideBody');
+    var sideCloseHint = document.getElementById('sideCloseHint');
     if (sideToggle && sideBody) {
       sideToggle.addEventListener('click', function () {
         sideBody.style.display = (sideBody.style.display === 'none') ? 'flex' : 'none';
+      });
+    }
+    // "点此退出聊天"关闭面板
+    if (sideCloseHint && sideBody) {
+      sideCloseHint.addEventListener('click', function () {
+        sideBody.style.display = 'none';
       });
     }
     // 聊天发送

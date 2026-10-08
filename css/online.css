@@ -1040,10 +1040,10 @@
 .lobby-select:focus { border-color: #ffd54f; }
 .lobby-select option { background: #1a2e1c; color: #ffe082; }
 
-/* ============ 右侧分数/聊天面板 ============ */
+/* ============ 右侧分数/聊天面板（倒计时右边） ============ */
 .side-panel {
   position: fixed;
-  right: 0;
+  left: calc(50% + 14vh);
   top: 50%;
   transform: translateY(-50%);
   z-index: 80;
@@ -1051,7 +1051,7 @@
   flex-direction: row;
   align-items: stretch;
 }
-/* 长条形切换按钮：竖排文字，贴在屏幕右边缘 */
+/* 长条形切换按钮：竖排文字，在倒计时右边 */
 .side-toggle {
   writing-mode: vertical-rl;
   text-orientation: upright;
@@ -1060,8 +1060,7 @@
   color: #ffe082;
   background: linear-gradient(90deg, rgba(20,30,20,0.85), rgba(40,55,35,0.9));
   border: 1px solid #3a5a3a;
-  border-right: none;
-  border-radius: 8px 0 0 8px;
+  border-radius: 8px;
   cursor: pointer;
   letter-spacing: 2px;
   white-space: nowrap;
@@ -1076,13 +1075,39 @@
   max-height: 70vh;
   background: rgba(15, 22, 16, 0.95);
   border: 1px solid #3a5a3a;
-  border-right: none;
-  border-radius: 10px 0 0 10px;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: -4px 0 16px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
 }
+/* 当前牌局底分/总分信息 */
+.side-round-info {
+  padding: 10px 12px;
+  border-bottom: 1px solid #2a3a2a;
+  font-size: 13px;
+  line-height: 1.8;
+  flex-shrink: 0;
+}
+.side-round-info .ri-row {
+  display: flex;
+  justify-content: space-between;
+  color: #e0e0e0;
+}
+.side-round-info .ri-label { color: #aaa; }
+.side-round-info .ri-val { color: #81c784; font-weight: bold; }
+/* 关闭提示 */
+.side-close-hint {
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: #888;
+  cursor: pointer;
+  border-top: 1px solid #2a3a2a;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.side-close-hint:active { color: #ffd54f; }
 /* 分数表 */
 .side-scores {
   padding: 10px 12px;
