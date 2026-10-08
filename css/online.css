@@ -156,9 +156,12 @@
   font-size: 22px;
   font-weight: 800;
   color: #ffe08a;
-  min-width: 60px;
+  flex: 1;
+  min-width: 0;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .hidden-select {
   position: absolute;
