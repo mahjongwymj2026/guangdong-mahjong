@@ -59,6 +59,14 @@
     showTable: function () {
       document.getElementById('lobby').style.display = 'none';
       document.getElementById('gameRoot').style.display = 'block';
+      ui.checkOrientation();
+    },
+    // 横屏检测：竖屏时显示旋转提示
+    checkOrientation: function () {
+      var ov = document.getElementById('rotateOverlay');
+      if (!ov) return;
+      var isPortrait = window.innerHeight > window.innerWidth;
+      ov.classList.toggle('show', isPortrait);
     },
     // 房间到期：中央弹窗提示，玩家看完结算后点"返回大厅"
     showRoomExpired: function () {
@@ -1687,10 +1695,19 @@
       if (!txt) return;
       net.send('chat', { text: txt });
       if (chatInput) chatInput.value = '';
+      // 发送后自动展开聊天面板，方便看到自己发的消息
+      var sb = document.getElementById('sideBody');
+      if (sb) sb.style.display = 'flex';
     }
     if (chatSend) chatSend.addEventListener('click', sendChat);
     if (chatInput) chatInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); sendChat(); }
+    });
+
+    // 横屏检测：旋转屏幕时实时更新提示
+    window.addEventListener('resize', ui.checkOrientation);
+    window.addEventListener('orientationchange', function () {
+      setTimeout(ui.checkOrientation, 300);
     });
 
     // 输入框 Enter 触发对应按钮

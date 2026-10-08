@@ -355,12 +355,22 @@ Room.prototype._doStartRound = function (sessionId, seat) {
   this.status = 'playing';
   this._resetTakeover();                 // 新局：超时次数与电脑接管全部清零
   var snap = this.engine.startRound();
+  this._syncSeatNamesToEngine();          // 把真实昵称同步到 engine，分数面板/聊天才能显示正确名字
   this.broadcastEvent(EVT.ROUND_START, {
     roundNum: snap.roundNum, ghost: snap.ghost, dealer: snap.dealer
   });
   this.broadcastState();
   this._armDiscardTimer(snap.dealer);   // 庄家先出牌
   return { ok: true };
+};
+
+// 把 seats 里的真实昵称同步到 engine.players（默认是"你/右家/对家/左家"）
+Room.prototype._syncSeatNamesToEngine = function () {
+  for (var i = 0; i < 4; i++) {
+    if (this.seats[i] && this.seats[i].name) {
+      this.engine.players[i].name = this.seats[i].name;
+    }
+  }
 };
 
 // 玩家点"下一局"= 准备；房主也不能直接开，必须所有人准备或30秒到
@@ -407,6 +417,7 @@ Room.prototype._doStartNextRound = function () {
   this.status = 'playing';
   this._resetTakeover();                 // 新局：超时次数与电脑接管全部清零
   var snap = this.engine.startRound();
+  this._syncSeatNamesToEngine();          // 把真实昵称同步到 engine
   this.broadcastEvent(EVT.ROUND_START, {
     roundNum: snap.roundNum, ghost: snap.ghost, dealer: snap.dealer
   });
