@@ -1195,21 +1195,23 @@
 /* 牌组浮在红底之上 */
 .warn3 > .meld { position: relative; z-index: 2; }
 
-/* 「九张」角标 */
+/* 「九张」角标：各家副露左上角，大字有紧张感 */
 .warn3-tag {
   position: absolute;
   z-index: 5;
-  background: linear-gradient(#e52b2b,#a80000);
+  background: linear-gradient(#ff3030,#a80000);
   color: #fff;
-  font-weight: bold;
+  font-weight: 900;
   white-space: nowrap;
   line-height: 1.2;
-  font-size: 1.7vh;
-  padding: .25vh 1vh;
+  font-size: 3.2vh;
+  padding: .3vh 1.2vh;
   border-radius: .8vh;
-  box-shadow: 0 .3vh .8vh rgba(0,0,0,.5);
+  box-shadow: 0 .3vh .8vh rgba(0,0,0,.6), 0 0 1.2vh rgba(255,40,40,.5);
+  text-shadow: 0 .15vh 0 rgba(0,0,0,.5);
+  letter-spacing: .2vh;
 }
-.my-melds .warn3-tag   { top: -2.8vh; right: 0; font-size: 1.8vh; }
-.top-melds .warn3-tag   { top: -2.6vh; left: 0; }
-.left-melds .warn3-tag  { top: -2.2vh; left: -2vh; font-size: 1.5vh; }
-.right-melds .warn3-tag { top: -2.2vh; right: -2vh; font-size: 1.5vh; }
+.my-melds .warn3-tag   { top: -3vh; left: 0; }
+.top-melds .warn3-tag   { top: -3vh; left: 0; }
+.left-melds .warn3-tag  { top: -2.8vh; left: 0; }
+.right-melds .warn3-tag { top: -2.8vh; left: 0; }

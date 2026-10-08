@@ -938,10 +938,6 @@
   .auto-tag { font-size: 1.2vw; padding: .15vw .6vw; }
 
   /* 副露区九张警示角标字体 */
-  .my-melds .warn3-tag { font-size: 1.3vw; top: -2.2vw; right: 0; }
-  .top-melds .warn3-tag { font-size: 1.2vw; top: -2vw; left: 0; }
-  .left-melds .warn3-tag, .right-melds .warn3-tag { font-size: 1.1vw; top: -1.8vw; }
-
   /* ghost-badge 角标：用 game.css 的统一放大尺寸，不再覆盖 */
 
   /* ---------- 结算弹窗：横屏直接用 game.css 默认样式，不覆盖 ---------- */
