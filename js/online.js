@@ -1127,6 +1127,8 @@
       var fEl = document.getElementById('endFan');
       var pEl = document.getElementById('endPayText');
       var tbl = document.getElementById('endTable');
+      var ridEl = document.getElementById('endRoomId');
+      if (ridEl) ridEl.textContent = '房号 ' + (online.roomId || '------');
 
       // tile code → 中文名
       var Z_NAMES = ['', '东', '南', '西', '北', '中', '发', '白'];
