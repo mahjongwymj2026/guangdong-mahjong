@@ -1279,3 +1279,95 @@
 
 /* 隐藏原来的"或"分隔符（如果 HTML 里还留着的话） */
 .lobby-divider { display: none; }
+
+/* ========================================================
+   语音聊天按钮
+   ======================================================== */
+.voice-btn-wrap {
+  position: absolute;
+  z-index: 15;
+  display: none;       /* JS 在 showTable 时改为 flex */
+}
+.voice-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  background: rgba(7, 39, 28, 0.82);
+  color: #ffd54f;
+  border: 1.5px solid rgba(255, 213, 79, 0.6);
+  border-radius: 20px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  white-space: nowrap;
+  font-family: inherit;
+  line-height: 1.4;
+  touch-action: none;       /* 阻止长按滚动 */
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.voice-btn:active { background: rgba(255, 213, 79, 0.25); }
+/* 说话中（自己录音）：金色高亮 */
+.voice-btn.active {
+  background: #ffd54f;
+  color: #1a2e1c;
+  border-color: #ff8f00;
+  box-shadow: 0 0 14px rgba(255, 179, 0, 0.8);
+}
+/* 禁用（别人在说话）：灰色 */
+.voice-btn.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+  filter: grayscale(1);
+}
+/* 播放中（收到别人语音）：声波跳动动画 */
+.voice-btn.playing {
+  border-color: #ffd54f;
+  color: #ffd54f;
+  animation: voice-wave 0.5s ease-in-out infinite alternate;
+}
+@keyframes voice-wave {
+  from { box-shadow: 0 0 4px rgba(255, 213, 79, 0.4); transform: scale(1); }
+  to   { box-shadow: 0 0 18px rgba(255, 213, 79, 1);   transform: scale(1.08); }
+}
+
+/* 聊天面板里的语音消息记录 */
+.chat-voice-msg {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  color: #ffe082;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 213, 79, 0.3);
+  background: rgba(255, 213, 79, 0.08);
+  font-size: 12px;
+}
+.chat-voice-msg:active { background: rgba(255, 213, 79, 0.2); }
+.chat-voice-msg.replaying { animation: voice-wave 0.5s ease-in-out infinite alternate; }
+
+/* ---------- 横屏定位 ---------- */
+@media (orientation: landscape) {
+  /* 自己：左下角上方，不遮挡手牌和副露 */
+  #voiceBtn0 { bottom: 9vw; left: 2vw; }
+  /* 右家：右上角下方 */
+  #voiceBtn1 { top: 5vw; right: 3vh; }
+  /* 对家：顶部居中 */
+  #voiceBtn2 { top: 0.5vh; left: 50%; transform: translateX(-50%); }
+  /* 左家：左上角下方 */
+  #voiceBtn3 { top: 5vw; left: 3vh; }
+
+  .voice-btn { font-size: 1.3vw; padding: 0.4vw 1vw; border-radius: 1vw; }
+}
+
+/* ---------- 竖屏（基本不可玩，但也给个位置） ---------- */
+@media (orientation: portrait) {
+  #voiceBtn0 { bottom: 12vh; left: 2vw; }
+  #voiceBtn1 { top: 8vh; right: 2vw; }
+  #voiceBtn2 { top: 1vh; left: 50%; transform: translateX(-50%); }
+  #voiceBtn3 { top: 8vh; left: 2vw; }
+  .voice-btn { font-size: 11px; padding: 4px 10px; }
+}

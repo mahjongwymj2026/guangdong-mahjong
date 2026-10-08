@@ -55,6 +55,7 @@
     showLobby: function () {
       document.getElementById('lobby').style.display = 'flex';
       document.getElementById('gameRoot').style.display = 'none';
+      voice.hideButtons();
     },
     showTable: function () {
       document.getElementById('lobby').style.display = 'none';
@@ -62,6 +63,7 @@
       // 牌桌右上角房号条一直显示（倒计时有卡才显示）
       var cdGame = document.getElementById('gameCardCountdown');
       if (cdGame) cdGame.style.display = 'flex';
+      voice.showButtons();
       ui.checkOrientation();
     },
     // 横屏检测：竖屏时显示旋转提示
@@ -402,6 +404,15 @@
             // 聊天消息：立即显示，不进1秒延迟的动作事件流程
             if (m.evt === 'chat') {
               ui.appendChat(m.detail.seat, m.detail.text, m.detail.name);
+              break;
+            }
+            // 语音事件：实时处理，不进延迟队列
+            if (m.evt === 'voice_take') {
+              voice.onTake(m.detail.seat);
+              break;
+            }
+            if (m.evt === 'voice_data') {
+              voice.onData(m.detail.seat, m.detail.name, m.detail.data, m.detail.duration);
               break;
             }
             // 下一局倒计时启动
@@ -1601,6 +1612,254 @@
     if (mine < 0) return abs;   // 未入房时直接返回（兜底）
     return ((abs - mine) % 4 + 4) % 4;
   }
+  // ============ 语音聊天 ============
+  var voice = {
+    _recorder: null,
+    _chunks: [],
+    _stream: null,
+    _timer: null,
+    _startTime: 0,
+    _recording: false,
+    _requested: false,      // 已发 voice_take，等服务器确认
+    _pendingRelease: false, // 确认前就松手了，收到确认后立即停止
+
+    supported: function () {
+      return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia &&
+                window.MediaRecorder);
+    },
+
+    // 按下自己的语音按钮 → 请求抢麦
+    press: function () {
+      if (!this.supported()) { ui.toast('当前浏览器不支持语音', 'error'); return; }
+      if (this._recording || this._requested) return;
+      if (online.mySeat < 0) return;
+      this._requested = true;
+      this._pendingRelease = false;
+      net.send('voice_take', {});
+    },
+
+    // 松开按钮 → 停止录音并发送；若还没开始录音则标记待停
+    release: function () {
+      if (this._recording) {
+        this._stopAndSend();
+      } else if (this._requested) {
+        this._pendingRelease = true;
+      }
+    },
+
+    // 收到 VOICE_TAKE 事件（seat 为 null = 释放）
+    onTake: function (seat) {
+      if (seat === null || seat === undefined) {
+        // 锁释放（服务器超时或别人说完）
+        if (this._recording) {
+          this._stopAndSend();   // 服务器超时，强制停止并发送
+        } else if (this._requested) {
+          // 请求未被接受或已超时
+          this._requested = false;
+          this._pendingRelease = false;
+        }
+        this._resetButtons();
+        return;
+      }
+      var rel = relSeat(seat);
+      this._setButtonState(rel);
+      if (seat === online.mySeat) {
+        // 自己抢到麦 → 开始录音
+        this._startRecording();
+      } else {
+        // 别人抢到麦 → 自己的请求被拒
+        if (this._requested) { this._requested = false; this._pendingRelease = false; }
+      }
+    },
+
+    // 收到 VOICE_DATA 事件 → 播放 + 聊天记录
+    onData: function (seat, name, data, duration) {
+      var rel = relSeat(seat);
+      if (data) this._play(data, rel);
+      this._appendVoiceChat(seat, name, data, duration);
+    },
+
+    _startRecording: function () {
+      var self = this;
+      this._startTime = Date.now();
+      this._chunks = [];
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+        if (!self._requested) { // 期间已被释放
+          stream.getTracks().forEach(function (t) { t.stop(); });
+          return;
+        }
+        self._stream = stream;
+        try {
+          self._recorder = new MediaRecorder(stream);
+        } catch (e) {
+          ui.toast('录音失败', 'error');
+          net.send('voice_data', { data: '', duration: 0 });
+          self._cleanup();
+          return;
+        }
+        self._recorder.ondataavailable = function (e) {
+          if (e.data && e.data.size > 0) self._chunks.push(e.data);
+        };
+        self._recorder.start();
+        self._recording = true;
+        // 松手早于录音开始 → 立即停止
+        if (self._pendingRelease) {
+          self._pendingRelease = false;
+          setTimeout(function () { if (self._recording) self._stopAndSend(); }, 50);
+          return;
+        }
+        // 20 秒自动停止
+        self._timer = setTimeout(function () {
+          if (self._recording) self._stopAndSend();
+        }, 20000);
+      }).catch(function () {
+        ui.toast('无法访问麦克风', 'error');
+        net.send('voice_data', { data: '', duration: 0 });
+        self._cleanup();
+      });
+    },
+
+    _stopAndSend: function () {
+      if (!this._recording || !this._recorder) return;
+      var self = this;
+      this._recording = false;
+      if (this._timer) { clearTimeout(this._timer); this._timer = null; }
+      var rec = this._recorder;
+      rec.onstop = function () {
+        var duration = Math.max(1, Math.round((Date.now() - self._startTime) / 1000));
+        if (self._chunks.length === 0) {
+          net.send('voice_data', { data: '', duration: 0 });
+          self._cleanup();
+          return;
+        }
+        var blob = new Blob(self._chunks, { type: rec.mimeType || 'audio/webm' });
+        var reader = new FileReader();
+        reader.onloadend = function () {
+          var base64 = reader.result.split(',')[1] || '';
+          net.send('voice_data', { data: base64, duration: duration });
+          self._cleanup();
+        };
+        reader.readAsDataURL(blob);
+      };
+      try { rec.stop(); } catch (e) { self._cleanup(); net.send('voice_data', { data: '', duration: 0 }); }
+    },
+
+    _cleanup: function () {
+      if (this._stream) { this._stream.getTracks().forEach(function (t) { t.stop(); }); this._stream = null; }
+      this._recorder = null;
+      this._chunks = [];
+      this._recording = false;
+      this._pendingRelease = false;
+      this._requested = false;
+      if (this._timer) { clearTimeout(this._timer); this._timer = null; }
+    },
+
+    // 说话者亮、其他灰
+    _setButtonState: function (speakerRel) {
+      for (var i = 0; i < 4; i++) {
+        var btn = this._getBtn(i);
+        if (!btn) continue;
+        btn.classList.remove('active', 'disabled', 'playing');
+        btn.classList.add(i === speakerRel ? 'active' : 'disabled');
+      }
+    },
+
+    _resetButtons: function () {
+      for (var i = 0; i < 4; i++) {
+        var btn = this._getBtn(i);
+        if (btn) btn.classList.remove('active', 'disabled', 'playing');
+      }
+    },
+
+    _getBtn: function (rel) {
+      var wrap = document.getElementById('voiceBtn' + rel);
+      return wrap ? wrap.querySelector('.voice-btn') : null;
+    },
+
+    // 播放 base64 音频 + 说话者按钮声波动画
+    _play: function (base64, rel) {
+      try {
+        var bytes = this._base64ToBytes(base64);
+        var blob = new Blob([bytes], { type: 'audio/webm' });
+        var url = URL.createObjectURL(blob);
+        var audio = new Audio(url);
+        var btn = this._getBtn(rel);
+        if (btn) btn.classList.add('playing');
+        audio.onended = function () {
+          if (btn) btn.classList.remove('playing');
+          URL.revokeObjectURL(url);
+        };
+        audio.play().catch(function () {});
+      } catch (e) {}
+    },
+
+    _base64ToBytes: function (base64) {
+      var binary = atob(base64);
+      var bytes = new Uint8Array(binary.length);
+      for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return bytes;
+    },
+
+    // 聊天面板加语音记录（可点击回放）
+    _appendVoiceChat: function (seat, name, data, duration) {
+      var log = document.getElementById('chatLog');
+      if (!log) return;
+      var displayName = name || ('玩家' + (seat + 1));
+      var msg = document.createElement('div');
+      msg.className = 'chat-msg';
+      var dir = document.createElement('span');
+      dir.className = 'chat-dir';
+      dir.textContent = displayName + '：';
+      var voiceEl = document.createElement('span');
+      voiceEl.className = 'chat-voice-msg';
+      voiceEl.textContent = '🎵 语音 ' + duration + '秒';
+      if (data) {
+        var self = this;
+        voiceEl.addEventListener('click', function () {
+          voiceEl.classList.add('replaying');
+          var bytes = self._base64ToBytes(data);
+          var blob = new Blob([bytes], { type: 'audio/webm' });
+          var url = URL.createObjectURL(blob);
+          var audio = new Audio(url);
+          audio.onended = function () { voiceEl.classList.remove('replaying'); URL.revokeObjectURL(url); };
+          audio.play().catch(function () { voiceEl.classList.remove('replaying'); });
+        });
+      }
+      msg.appendChild(dir);
+      msg.appendChild(voiceEl);
+      log.appendChild(msg);
+      log.scrollTop = log.scrollHeight;
+    },
+
+    showButtons: function () {
+      for (var i = 0; i < 4; i++) {
+        var wrap = document.getElementById('voiceBtn' + i);
+        if (wrap) wrap.style.display = 'flex';
+      }
+    },
+    hideButtons: function () {
+      for (var i = 0; i < 4; i++) {
+        var wrap = document.getElementById('voiceBtn' + i);
+        if (wrap) wrap.style.display = 'none';
+      }
+      this._cleanup();
+    },
+
+    // 绑定 push-to-talk（只绑自己的按钮 voiceBtn0）
+    bindPushToTalk: function () {
+      var btn = this._getBtn(0);
+      if (!btn) return;
+      var self = this;
+      var start = function (e) { e.preventDefault(); self.press(); };
+      var end = function (e) { e.preventDefault(); self.release(); };
+      btn.addEventListener('mousedown', start);
+      btn.addEventListener('mouseup', end);
+      btn.addEventListener('mouseleave', end);
+      btn.addEventListener('touchstart', start, { passive: false });
+      btn.addEventListener('touchend', end, { passive: false });
+      btn.addEventListener('touchcancel', end, { passive: false });
+    }
+  };
   // 相对位置 → DOM id 映射表（单一入口，收敛所有硬编码）
   var SEAT_BOXES = {
     hand:  ['myHand',    'rightHand', 'topHand',  'leftHand'],
@@ -1711,6 +1970,9 @@
       if (e.key === 'Enter') { e.preventDefault(); sendChat(); }
     });
 
+    // 语音聊天 push-to-talk 绑定
+    voice.bindPushToTalk();
+
     // 横屏检测：旋转屏幕时实时更新提示
     window.addEventListener('resize', ui.checkOrientation);
     window.addEventListener('orientationchange', function () {
@@ -1777,6 +2039,7 @@
   online.action = action;
   online.sfx = sfx;
   online.ui = ui;
+  online.voice = voice;
   online.start = start;
   window.online = online;
 

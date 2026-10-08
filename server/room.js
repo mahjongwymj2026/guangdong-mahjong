@@ -48,6 +48,9 @@ function Room(roomId, baseScore, initScore, cardExpiry) {
   this._expireTimer = null;            // 到点定时器
   this._destroyTimer = null;           // 到期后延迟 10 秒销毁房间
   this.onExpired = null;               // RoomManager 注入：销毁房间回调
+  // 语音聊天锁：当前说话者的座位号，null 表示无人说话
+  this._voiceLockBy = null;
+  this._voiceTimer = null;             // 20 秒自动释放语音锁
   this._armExpiry();
 }
 
@@ -93,6 +96,7 @@ Room.prototype._expireRoom = function () {
 Room.prototype._dispose = function () {
   if (this._expireTimer) { clearTimeout(this._expireTimer); this._expireTimer = null; }
   if (this._destroyTimer) { clearTimeout(this._destroyTimer); this._destroyTimer = null; }
+  this._clearVoiceTimer();
   this._clearAllAutoTimers();
 };
 
@@ -131,6 +135,8 @@ Room.prototype._hasOtherRealPlayer = function (excludeSessionId) {
 // 房间设置（底分/总分）与房主卡倒计时保留，玩家用房号回来可重新加机器人开局
 Room.prototype._resetToEmpty = function () {
   this._clearAllAutoTimers();
+  this._clearVoiceTimer();
+  this._voiceLockBy = null;
   this.deadlines = { discard: 0, claim: 0 };
   this._passingSeats = {};
   this._huWinners = null;
@@ -276,6 +282,8 @@ Room.prototype.dispatch = function (sessionId, type, payload) {
   if (type === C.PASS) return this._doPass(sessionId, seat);
   if (type === C.HU) return this._doHu(sessionId, seat);
   if (type === C.CHAT) return this._doChat(sessionId, seat, payload.text);
+  if (type === C.VOICE_TAKE) return this._doVoiceTake(sessionId, seat);
+  if (type === C.VOICE_DATA) return this._doVoiceData(sessionId, seat, payload);
 
   return { ok: false, code: ERR.BAD_PAYLOAD, msg: '未知动作 ' + type };
 };
@@ -285,6 +293,40 @@ Room.prototype._doChat = function (sessionId, seat, text) {
   var name = (this.seats[seat] && this.seats[seat].name) || ('玩家' + (seat + 1));
   this.broadcastEvent(EVT.CHAT, { seat: seat, name: name, text: text });
   return { ok: true };
+};
+
+// 语音抢麦：无人占用时设锁，广播 VOICE_TAKE 给所有人
+Room.prototype._doVoiceTake = function (sessionId, seat) {
+  if (this._voiceLockBy !== null) return { ok: true };  // 已有人在说话，忽略
+  this._voiceLockBy = seat;
+  this._clearVoiceTimer();
+  var self = this;
+  this._voiceTimer = setTimeout(function () {
+    self._clearVoiceTimer();
+    self._voiceLockBy = null;
+    self.broadcastEvent(EVT.VOICE_TAKE, { seat: null });  // 20秒到时自动释放
+  }, 20000);
+  this.broadcastEvent(EVT.VOICE_TAKE, { seat: seat });
+  return { ok: true };
+};
+
+// 语音数据：广播 VOICE_DATA，释放锁，广播 VOICE_TAKE(seat=null) 恢复所有人
+Room.prototype._doVoiceData = function (sessionId, seat, payload) {
+  var name = (this.seats[seat] && this.seats[seat].name) || ('玩家' + (seat + 1));
+  // 只有当前说话者能发数据（防止伪造）
+  if (this._voiceLockBy !== seat) return { ok: true };
+  this._clearVoiceTimer();
+  this._voiceLockBy = null;
+  this.broadcastEvent(EVT.VOICE_DATA, {
+    seat: seat, name: name, data: payload.data, duration: payload.duration
+  });
+  this.broadcastEvent(EVT.VOICE_TAKE, { seat: null });  // 恢复所有人按钮
+  return { ok: true };
+};
+
+// 清理语音定时器
+Room.prototype._clearVoiceTimer = function () {
+  if (this._voiceTimer) { clearTimeout(this._voiceTimer); this._voiceTimer = null; }
 };
 
 Room.prototype._doTakeSeat = function (sessionId, seatIdx) {
@@ -808,6 +850,12 @@ Room.prototype.attachWs = function (sessionId, ws, name) {
 Room.prototype.markDisconnected = function (sessionId) {
   var seat = this.seatOf(sessionId);
   if (seat < 0) return;
+  // 说话者断线：释放语音锁
+  if (this._voiceLockBy === seat) {
+    this._clearVoiceTimer();
+    this._voiceLockBy = null;
+    this.broadcastEvent(EVT.VOICE_TAKE, { seat: null });
+  }
   this.seats[seat].connected = false;
   // 房主断开 → 转让给下一个真人（关页面/退出即视为让出房主）
   if (this.ownerSessionId === sessionId) {

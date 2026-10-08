@@ -21,7 +21,9 @@ var C = {
   ADD_BOT: 'add_bot',
   REMOVE_BOT: 'remove_bot',
   CANCEL_TAKEOVER: 'cancel_takeover',
-  CHAT: 'chat'
+  CHAT: 'chat',
+  VOICE_TAKE: 'voice_take',
+  VOICE_DATA: 'voice_data'
 };
 
 // ---------- 服务端 → 客户端 消息类型 ----------
@@ -54,7 +56,9 @@ var EVT = {
   ROOM_EXPIRED: 'room_expired',     // 房主卡 6 小时到期，房间关闭
   CHAT: 'chat',                     // 聊天消息
   NEXT_ROUND_COUNTDOWN: 'next_round_countdown', // 下一局倒计时启动
-  NEXT_ROUND_READY: 'next_round_ready'          // 某人按下一局准备
+  NEXT_ROUND_READY: 'next_round_ready',          // 某人按下一局准备
+  VOICE_TAKE: 'voice_take',        // 语音抢麦/释放（seat 为 null 表示释放）
+  VOICE_DATA: 'voice_data'          // 语音数据广播（seat + base64 + duration）
 };
 
 // ---------- 错误码 ----------
@@ -140,6 +144,16 @@ function validateClient(msg) {
     case C.CHAT:
       if (!isStr(msg.text) || msg.text.length > 100) return bad(ERR.BAD_PAYLOAD, '聊天内容 1-100 字');
       return ok({ text: msg.text.trim() });
+    case C.VOICE_TAKE:
+      return ok({});
+    case C.VOICE_DATA:
+      // base64 音频数据，最长 20 秒约 50KB；duration 1-20 秒
+      if (typeof msg.data !== 'string') return bad(ERR.BAD_PAYLOAD, '语音数据必须是字符串');
+      if (msg.data.length > 120000) return bad(ERR.BAD_PAYLOAD, '语音数据过大');
+      if (msg.duration !== undefined && (typeof msg.duration !== 'number' || msg.duration < 0 || msg.duration > 20)) {
+        return bad(ERR.BAD_PAYLOAD, '语音时长 0-20 秒');
+      }
+      return ok({ data: msg.data, duration: msg.duration || 0 });
     default:
       return bad(ERR.BAD_PAYLOAD, '未知消息类型: ' + t);
   }
