@@ -73,15 +73,14 @@
       var el = document.getElementById('lobbyStatus');
       if (el) el.textContent = msg || '';
     },
-    // 聊天：按方位显示消息
-    appendChat: function (seat, text) {
+    // 聊天：用玩家昵称显示
+    appendChat: function (seat, text, name) {
       var log = document.getElementById('chatLog');
       if (!log || !text) return;
-      var DIR = ['南', '东', '北', '西'];
-      var dir = DIR[seat] || ('座' + seat);
+      var displayName = name || ('玩家' + (seat + 1));
       var msg = document.createElement('div');
       msg.className = 'chat-msg';
-      msg.innerHTML = '<span class="chat-dir">' + dir + '：</span><span class="chat-text">' + escapeHtml(text) + '</span>';
+      msg.innerHTML = '<span class="chat-dir">' + escapeHtml(displayName) + '：</span><span class="chat-text">' + escapeHtml(text) + '</span>';
       log.appendChild(msg);
       log.scrollTop = log.scrollHeight;
     },
@@ -387,7 +386,7 @@
             }
             // 聊天消息：立即显示，不进1秒延迟的动作事件流程
             if (m.evt === 'chat') {
-              ui.appendChat(m.detail.seat, m.detail.text);
+              ui.appendChat(m.detail.seat, m.detail.text, m.detail.name);
               break;
             }
             // 下一局倒计时启动

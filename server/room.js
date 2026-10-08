@@ -280,9 +280,10 @@ Room.prototype.dispatch = function (sessionId, type, payload) {
   return { ok: false, code: ERR.BAD_PAYLOAD, msg: '未知动作 ' + type };
 };
 
-// 聊天：广播给全房，带座位号
+// 聊天：广播给全房，带座位号和发送者名字
 Room.prototype._doChat = function (sessionId, seat, text) {
-  this.broadcastEvent(EVT.CHAT, { seat: seat, text: text });
+  var name = (this.seats[seat] && this.seats[seat].name) || ('玩家' + (seat + 1));
+  this.broadcastEvent(EVT.CHAT, { seat: seat, name: name, text: text });
   return { ok: true };
 };
 
