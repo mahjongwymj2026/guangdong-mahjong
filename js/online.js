@@ -59,6 +59,9 @@
     showTable: function () {
       document.getElementById('lobby').style.display = 'none';
       document.getElementById('gameRoot').style.display = 'block';
+      // 牌桌右上角房号条一直显示（倒计时有卡才显示）
+      var cdGame = document.getElementById('gameCardCountdown');
+      if (cdGame) cdGame.style.display = 'flex';
       ui.checkOrientation();
     },
     // 横屏检测：竖屏时显示旋转提示
@@ -131,12 +134,18 @@
       if (ui._cdInterval) { clearInterval(ui._cdInterval); ui._cdInterval = null; }
       var cdLobby = document.getElementById('cardCountdown');
       var cdGame = document.getElementById('gameCardCountdown');
+      var gameLabel = cdGame ? cdGame.querySelector('.cd-label') : null;
+      var gameTime = document.getElementById('gameCdTime');
       if (!expiryTs || expiryTs <= Date.now()) {
-        // 过期了或没卡 → 隐藏
+        // 过期了或没卡 → 大厅隐藏；牌桌只隐藏倒计时文字，房号保留
         if (cdLobby) cdLobby.style.display = 'none';
-        if (cdGame) cdGame.style.display = 'none';
+        if (gameLabel) gameLabel.style.display = 'none';
+        if (gameTime) gameTime.style.display = 'none';
         return;
       }
+      // 有卡 → 显示倒计时文字
+      if (gameLabel) gameLabel.style.display = '';
+      if (gameTime) gameTime.style.display = '';
       var tick = function () {
         var remain = Math.max(0, expiryTs - Date.now());
         var sec = Math.floor(remain / 1000);
@@ -337,10 +346,8 @@
           // 显示房号
           var ridEl = document.getElementById('displayRoomId');
           if (ridEl) ridEl.textContent = m.roomId;
-          var barRid = document.getElementById('barRoomId');
-          if (barRid) barRid.textContent = m.roomId;
-          var barSeat = document.getElementById('barMySeat');
-          if (barSeat) barSeat.textContent = '座位 ' + m.seat;
+          var gameRid = document.getElementById('gameRoomId');
+          if (gameRid) gameRid.textContent = m.roomId;
           // 显示 房内大厅
           var roomCard = document.getElementById('roomCard');
           if (roomCard) roomCard.style.display = 'block';

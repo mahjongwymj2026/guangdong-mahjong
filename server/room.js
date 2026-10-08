@@ -394,12 +394,24 @@ Room.prototype._doNextRound = function (sessionId, seat) {
 // 启动下一局30秒倒计时
 Room.prototype._startNextRoundCountdown = function () {
   this.nextRoundReady = [false, false, false, false];
+  // 机器人自动准备，不用等30秒
+  for (var i = 0; i < 4; i++) {
+    if (this.seats[i] && this.seats[i].isBot) this.nextRoundReady[i] = true;
+  }
   this._nextRoundDeadline = Date.now() + 30000;
   var self = this;
   this._nextRoundTimer = setTimeout(function () {
     self._nextRoundTimer = null;
     self._doStartNextRound();
   }, 30000);
+  // 如果机器人准备后已经全员准备（比如全是机器人），直接开
+  var allReady = this.nextRoundReady.every(function (r) { return r; });
+  if (allReady) {
+    clearTimeout(this._nextRoundTimer);
+    this._nextRoundTimer = null;
+    this._doStartNextRound();
+    return;
+  }
   this.broadcastEvent(EVT.NEXT_ROUND_COUNTDOWN, {
     deadline: this._nextRoundDeadline,
     ready: this.nextRoundReady.slice()

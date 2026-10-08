@@ -1274,6 +1274,8 @@
 }
 .card-countdown.game .cd-label { font-size: 13px; }
 .card-countdown.game .cd-time { font-size: 16px; }
+.card-countdown.game .cd-room { color: #ffd54f; font-weight: bold; }
+.card-countdown.game .cd-room b { color: #fff; }
 
 /* 隐藏原来的"或"分隔符（如果 HTML 里还留着的话） */
 .lobby-divider { display: none; }
