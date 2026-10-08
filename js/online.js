@@ -85,6 +85,38 @@
       log.appendChild(msg);
       log.scrollTop = log.scrollHeight;
     },
+    // 下一局30秒倒计时
+    _nrInterval: null,
+    startNextRoundCountdown: function (deadline, ready) {
+      var cdEl = document.getElementById('nrCountdown');
+      if (!cdEl) return;
+      if (this._nrInterval) clearInterval(this._nrInterval);
+      var self = this;
+      function tick() {
+        var remain = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+        cdEl.textContent = remain;
+        cdEl.classList.toggle('urgent', remain <= 10);
+        if (remain <= 0) {
+          clearInterval(self._nrInterval);
+          self._nrInterval = null;
+        }
+      }
+      tick();
+      this._nrInterval = setInterval(tick, 500);
+      this.updateNextRoundReady(ready);
+    },
+    updateNextRoundReady: function (ready) {
+      var el = document.getElementById('nrReady');
+      if (!el || !ready) return;
+      var cnt = ready.filter(function (r) { return r; }).length;
+      el.textContent = cnt + '/4 已准备';
+      // 自己准备了就禁用按钮
+      var btn = document.getElementById('btnNextRound');
+      if (btn && online.mySeat >= 0 && ready[online.mySeat]) {
+        btn.disabled = true;
+        btn.textContent = '已准备';
+      }
+    },
     // 房主卡倒计时：服务器给一个过期时间戳（ms），客户端每秒刷新显示
     _cdInterval: null,
     updateCardCountdown: function (expiryTs) {
@@ -356,6 +388,16 @@
             // 聊天消息：立即显示，不进1秒延迟的动作事件流程
             if (m.evt === 'chat') {
               ui.appendChat(m.detail.seat, m.detail.text);
+              break;
+            }
+            // 下一局倒计时启动
+            if (m.evt === 'next_round_countdown') {
+              ui.startNextRoundCountdown(m.detail.deadline, m.detail.ready);
+              break;
+            }
+            // 某人准备下一局
+            if (m.evt === 'next_round_ready') {
+              ui.updateNextRoundReady(m.detail.ready);
               break;
             }
             // 动作事件统一延迟1秒：画面+声音同时出现，给语音预加载留时间，节奏均匀
@@ -1250,9 +1292,9 @@
         if (innerModal) innerModal.scrollTop = 0;
       }
 
-      // 下一局按钮：只有房主可点
+      // 下一局按钮：所有人都可以点准备（房主也不能直接开）
       var btnNext = document.getElementById('btnNextRound');
-      if (btnNext) btnNext.disabled = !online.isOwner;
+      if (btnNext) { btnNext.disabled = false; btnNext.textContent = '准备'; }
     },
 
     lobbyView: function () {
@@ -1470,9 +1512,9 @@
 
     onNextRound: function () {
       net.send('next_round', {});
-      // 关弹窗
-      var modal = document.getElementById('endModal');
-      if (modal) modal.style.display = 'none';
+      // 准备后不关弹窗，按钮变"已准备"
+      var btn = document.getElementById('btnNextRound');
+      if (btn) { btn.disabled = true; btn.textContent = '已准备'; }
     },
 
     onAbortRound: function () {

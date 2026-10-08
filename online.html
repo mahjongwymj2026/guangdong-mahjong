@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>广东麻将 · 联机对战</title>
   <link rel="stylesheet" href="css/game.css?v=136">
-  <link rel="stylesheet" href="css/online.css?v=43">
+  <link rel="stylesheet" href="css/online.css?v=44">
 </head>
 <body>
 
@@ -353,8 +353,12 @@
         <div class="m-fan" id="endFan" style="display:none;"></div>
         <div class="m-paytext" id="endPayText" style="display:none;"></div>
         <div class="m-table" id="endTable"></div>
+        <div class="next-round-bar">
+          <span class="nr-countdown" id="nrCountdown">30</span>
+          <span class="nr-ready" id="nrReady">0/4 已准备</span>
+        </div>
         <div class="m-btns">
-          <button class="btn btn-primary" id="btnNextRound">下一局</button>
+          <button class="btn btn-primary" id="btnNextRound">准备</button>
           <button class="btn btn-secondary" id="btnBackHome">返回首页</button>
         </div>
       </div>
@@ -391,7 +395,7 @@
 
   <script src="js/mahjong.js?v=40"></script>
   <script src="js/sounds.js?v=36"></script>
-  <script src="js/online.js?v=34"></script>
+  <script src="js/online.js?v=35"></script>
   <script src="js/home-ui.js?v=4"></script>
 </body>
 </html>

@@ -52,7 +52,9 @@ var EVT = {
   ROOM_STATE: 'room_state',
   AUTO_ACTION: 'auto_action',       // 阶段D 步骤3：服务端代出/代 pass 提示
   ROOM_EXPIRED: 'room_expired',     // 房主卡 6 小时到期，房间关闭
-  CHAT: 'chat'                      // 聊天消息
+  CHAT: 'chat',                     // 聊天消息
+  NEXT_ROUND_COUNTDOWN: 'next_round_countdown', // 下一局倒计时启动
+  NEXT_ROUND_READY: 'next_round_ready'          // 某人按下一局准备
 };
 
 // ---------- 错误码 ----------

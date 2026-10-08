@@ -38,6 +38,9 @@ function Room(roomId, baseScore, initScore, cardExpiry) {
   this.takenOver = [false, false, false, false];  // 本局是否已被电脑接管
   this.deadlines = { discard: 0, claim: 0 };       // 当前阶段截止时间戳（随快照发给客户端做倒计时）
   this.botSeq = 0;                                  // 机器人编号计数
+  this.nextRoundReady = [false, false, false, false]; // 下一局准备状态
+  this._nextRoundTimer = null;                      // 下一局30秒倒计时
+  this._nextRoundDeadline = 0;                      // 下一局倒计时截止时间戳
 
   // 房主卡 6 小时到期
   this.expired = false;                // 房间已到期：房号失效，禁止加入/开局/下一局
@@ -204,6 +207,10 @@ Room.prototype.broadcastEvent = function (type, detail) {
 Room.prototype.broadcastState = function () {
   // 统一收口：到点且本局已结束 → 立即关房（覆盖胡牌/荒庄/中止所有结束路径）
   if (this._expirePending) this._checkExpireAfterRound();
+  // 本局结束 → 启动下一局30秒倒计时（只启动一次）
+  if (this.engine.phase === 'end' && !this._nextRoundTimer && !this.expired) {
+    this._startNextRoundCountdown();
+  }
   for (var i = 0; i < 4; i++) {
     var s = this.seats[i];
     if (!s || !s.connected) continue;
@@ -355,11 +362,46 @@ Room.prototype._doStartRound = function (sessionId, seat) {
   return { ok: true };
 };
 
+// 玩家点"下一局"= 准备；房主也不能直接开，必须所有人准备或30秒到
 Room.prototype._doNextRound = function (sessionId, seat) {
-  if (this.expired || this._expirePending) return { ok: false, code: ERR.ROOM_EXPIRED, msg: '房间时间已到，请使用新房主卡' };
-  if (this.ownerSessionId !== sessionId) return { ok: false, code: ERR.NOT_OWNER, msg: '只有房主可以开下一局' };
   if (this.engine.phase !== 'end' && this.engine.phase !== 'idle') {
     return { ok: false, code: ERR.PHASE_WRONG, msg: '本局尚未结束' };
+  }
+  if (this.expired || this._expirePending) {
+    return { ok: false, code: ERR.ROOM_EXPIRED, msg: '房间时间已到，请使用新房主卡' };
+  }
+  this.nextRoundReady[seat] = true;
+  var allReady = this.nextRoundReady.every(function (r) { return r; });
+  if (allReady) {
+    this._doStartNextRound();
+  } else {
+    this.broadcastEvent(EVT.NEXT_ROUND_READY, { ready: this.nextRoundReady.slice(), seat: seat });
+  }
+  return { ok: true };
+};
+
+// 启动下一局30秒倒计时
+Room.prototype._startNextRoundCountdown = function () {
+  this.nextRoundReady = [false, false, false, false];
+  this._nextRoundDeadline = Date.now() + 30000;
+  var self = this;
+  this._nextRoundTimer = setTimeout(function () {
+    self._nextRoundTimer = null;
+    self._doStartNextRound();
+  }, 30000);
+  this.broadcastEvent(EVT.NEXT_ROUND_COUNTDOWN, {
+    deadline: this._nextRoundDeadline,
+    ready: this.nextRoundReady.slice()
+  });
+};
+
+// 实际开始下一局（所有人准备或倒计时结束时调用）
+Room.prototype._doStartNextRound = function () {
+  if (this.expired || this._expirePending) return;
+  if (this.engine.phase !== 'end' && this.engine.phase !== 'idle') return;
+  if (this._nextRoundTimer) {
+    clearTimeout(this._nextRoundTimer);
+    this._nextRoundTimer = null;
   }
   this.status = 'playing';
   this._resetTakeover();                 // 新局：超时次数与电脑接管全部清零
@@ -369,7 +411,6 @@ Room.prototype._doNextRound = function (sessionId, seat) {
   });
   this.broadcastState();
   this._armDiscardTimer(snap.dealer);   // 新局庄家先出牌
-  return { ok: true };
 };
 
 Room.prototype._doAbortRound = function (sessionId, seat) {
@@ -806,6 +847,8 @@ Room.prototype._resetTakeover = function () {
   this.timeoutCounts = [0, 0, 0, 0];
   this.takenOver = [false, false, false, false];
   this.deadlines = { discard: 0, claim: 0 };
+  this.nextRoundReady = [false, false, false, false];
+  this._nextRoundDeadline = 0;
 };
 
 // 给轮到的出牌者上 discard 定时器

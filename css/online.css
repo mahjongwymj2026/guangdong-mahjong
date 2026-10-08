@@ -996,6 +996,29 @@
   .end-modal .m-btns .btn { font-size: 7.8vh; padding: 2.4vh 5.4vh; border-radius: 1.8vh; }
 }
 
+/* 下一局倒计时 + 准备状态 */
+.next-round-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3vh;
+  margin: 3vh 0 1vh;
+}
+.nr-countdown {
+  font-size: 6vh;
+  font-weight: 900;
+  color: #ffd54f;
+  min-width: 1.5em;
+  text-align: center;
+}
+.nr-countdown.urgent { color: #ff4d4d; animation: timer-breathe 0.8s infinite alternate; }
+.nr-ready {
+  font-size: 3vh;
+  color: #81c784;
+  font-weight: bold;
+}
+.btn-primary:disabled { opacity: 0.5; }
+
 /* ========================================================
    房主卡 / 底分 / 大厅新 UI（2026-09-23 新增）
    ======================================================== */
