@@ -227,6 +227,8 @@ Room.prototype.broadcastState = function () {
     snap.takenOver = this.takenOver.slice();
     snap.timeoutCounts = this.timeoutCounts.slice();
     snap.cardExpiry = this.cardExpiry;  // 房主卡过期时间戳，所有客户端用来做倒计时
+    snap.baseScore = this.baseScore;   // 当前牌局底分，右侧面板显示
+    snap.initScore = this.initScore;   // 当前牌局总分，右侧面板显示
     var msg = { type: S.STATE, seq: this.eventSeq, state: snap };
     try { s.ws.send(JSON.stringify(msg)); } catch (e) {}
   }

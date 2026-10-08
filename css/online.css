@@ -1063,10 +1063,10 @@
 .lobby-select:focus { border-color: #ffd54f; }
 .lobby-select option { background: #1a2e1c; color: #ffe082; }
 
-/* ============ 右侧分数/聊天面板（倒计时右边） ============ */
+/* ============ 右侧分数/聊天面板（贴屏幕右边） ============ */
 .side-panel {
   position: fixed;
-  left: calc(50% + 14vh);
+  right: 1vh;
   top: 50%;
   transform: translateY(-50%);
   z-index: 80;
@@ -1074,28 +1074,29 @@
   flex-direction: row;
   align-items: stretch;
 }
-/* 长条形切换按钮：竖排文字，在倒计时右边 */
+/* 长条形切换按钮：竖排文字，贴屏幕最右边 */
 .side-toggle {
   writing-mode: vertical-rl;
   text-orientation: upright;
-  padding: 14px 6px;
-  font-size: 14px;
+  padding: 12px 5px;
+  font-size: 12px;
   color: #ffe082;
   background: linear-gradient(90deg, rgba(20,30,20,0.85), rgba(40,55,35,0.9));
   border: 1px solid #3a5a3a;
   border-radius: 8px;
   cursor: pointer;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
   font-family: inherit;
 }
 .side-toggle:active { background: rgba(255,213,79,0.2); }
 
-/* 展开后的面板主体：左右两栏 */
+/* 展开后的面板主体：左右两栏（宽度收窄防超出屏幕） */
 .side-body {
-  width: 380px;
+  width: 280px;
   max-height: 70vh;
+  margin-right: 2px;
   background: rgba(15, 22, 16, 0.95);
   border: 1px solid #3a5a3a;
   border-radius: 10px;
@@ -1106,7 +1107,7 @@
 }
 /* 左栏：底分/总分/分数/退出 */
 .side-left-col {
-  width: 160px;
+  width: 110px;
   display: flex;
   flex-direction: column;
   border-right: 1px solid #2a3a2a;
@@ -1234,7 +1235,8 @@
 
 /* 竖屏：面板更窄 */
 @media (orientation: portrait) {
-  .side-body { width: 180px; }
+  .side-body { width: 240px; }
+  .side-left-col { width: 90px; }
 }
 
 /* 红色大字横屏提示 */
