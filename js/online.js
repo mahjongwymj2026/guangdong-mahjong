@@ -606,6 +606,7 @@
       if (s.phase && s.phase !== 'idle') {
         ui.showTable();
       }
+      render.dirLayer();   // 东南西北水印根据自己座位旋转
       render.turnInfo();
       render.deckInfo();
       render.roundInfo();
@@ -650,6 +651,23 @@
           }
         }
       }
+    },
+
+    // 东南西北水印：根据自己的座位号旋转，让"自己的方位"永远在屏幕下方
+    // 绝对方位：座位0=南, 1=东, 2=北, 3=西
+    dirLayer: function () {
+      var DIR = ['南', '东', '北', '西'];
+      var s = online.mySeat;
+      if (s < 0 || s > 3) return;
+      var n = document.querySelector('.dir-n');
+      var e = document.querySelector('.dir-e');
+      var w = document.querySelector('.dir-w');
+      var sEl = document.querySelector('.dir-s');
+      // 下方=自己, 右方=下家, 上方=对家, 左方=上家
+      if (sEl) sEl.textContent = DIR[s];
+      if (e) e.textContent = DIR[(s + 1) % 4];
+      if (n) n.textContent = DIR[(s + 2) % 4];
+      if (w) w.textContent = DIR[(s + 3) % 4];
     },
 
     turnInfo: function () {
