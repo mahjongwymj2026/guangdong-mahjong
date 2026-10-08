@@ -883,8 +883,9 @@ Room.prototype._armDiscardTimer = function (seat) {
     // phase === 'end' 不上定时器（荒庄或胡牌）
     self.broadcastState();
   }, delay);
-  // 截止时间刚更新，立刻同步一次给各客户端
-  this.broadcastState();
+  // 注：不再额外调用 broadcastState()——所有调用方（_doDiscard/_doPeng/_doKong 等）
+  // 都会在 _armDiscardTimer 返回后自行调用 broadcastState()，这里多发一条 state
+  // 会导致客户端收到重复 state 消息，在某些时序下触发 _pendingSfx 双播 → 出牌回声
 };
 
 // 给所有候选人上 claim 定时器（正常 15s 超时代 pass；机器人 0.8~1.5s AI 决策；被接管者 1s 自动过）
