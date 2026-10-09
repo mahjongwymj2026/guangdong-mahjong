@@ -727,7 +727,7 @@
   /* 自己弃牌区放大放宽 */
   #myPond img { height: 5vw; }
   /* 两排弃牌：第一条(前8张)贴手牌不动，第二条向上(屏幕中间方向)长 */
-  #myPond { flex-wrap: wrap-reverse; align-content: flex-end; }
+  #myPond { flex-wrap: wrap-reverse; align-content: flex-start; }
   .my-pond-wrapper {
     min-height: 4vw;
     padding: 0.1vh 0;
