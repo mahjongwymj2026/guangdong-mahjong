@@ -1206,9 +1206,12 @@
 
 /* ============================================================
    横屏布局（复用联机版 online.css 的位置/大小参数）
-   排除 .mj-own / .my-hand-wrapper（手牌区不动）
    ============================================================ */
 @media (orientation: landscape) {
+  /* 自己手牌放大 */
+  .mj-own { height: 8vw; }
+  .hand-tile.last-draw { margin-left: 1.8vw; }
+
   /* 自己弃牌区 */
   #myPond img { height: 5vw; }
   .my-pond-wrapper {
@@ -1326,23 +1329,22 @@
   .seat-right .right-back-col .mj-back:last-child { margin-bottom: 0 !important; }
   .seat-right .pond-right {
     display: flex !important;
-    flex-direction: row-reverse !important;
+    flex-direction: column-reverse !important;
     align-items: flex-end !important;
     align-self: flex-end !important;
-    margin-right: calc(6.8vh + 0.03vw) !important;
+    margin-right: 0 !important;
     max-height: none !important;
-    gap: 1.03vw !important;
-  }
-  .seat-right .pond-col {
-    display: flex !important;
-    flex-direction: column-reverse !important;
     gap: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
   }
-  .seat-right #rightPond img { height: 4vw !important; }
-  .seat-right .pond-col img { margin: 0 0 -1vw 0 !important; }
-  .seat-right .pond-col img:first-child { margin-bottom: 0 !important; }
+  .seat-right #rightPond img {
+    height: 4vw !important;
+    width: auto !important;
+    object-fit: contain !important;
+    display: block !important;
+    transform: rotate(270deg) !important;
+    margin: 0 0 -1vw 0 !important;
+  }
+  .seat-right #rightPond img:first-child { margin-bottom: 0 !important; }
 
   /* 对家 */
   #topPond img { height: 4vw !important; }
@@ -1367,11 +1369,12 @@
   }
   .pond-latest { animation: pond-latest-pulse 0.6s ease-in-out infinite; border-radius: 4px; }
 
-  /* 底部元素定位（手牌区不动，仅弃牌/副露/操作栏） */
-  .my-melds-wrapper { bottom: 1.5vw; left: 1.5vw; }
-  .my-pond-wrapper { bottom: 8vw; }
+  /* 底部元素定位 */
+  .my-hand-wrapper { bottom: 0.5vw; }
+  .my-melds-wrapper { bottom: 0.5vw; left: 1vw; }
+  .my-pond-wrapper { bottom: 20vw; }
   .action-bar {
-    bottom: 8vw;
+    bottom: 10vw;
     left: 50%;
     right: auto;
     transform: translateX(-50%);
@@ -1383,6 +1386,14 @@
     min-height: 8vh;
     border-radius: 0.5vw;
   }
-  .tip-line { bottom: 20vw; }
+  /* 禁用按钮透明，启用时显示 */
+  .action-bar .btn[disabled] {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .action-bar .btn:not([disabled]) {
+    opacity: 1;
+  }
+  .tip-line { bottom: 22vw; }
   .auto-tag { font-size: 1.2vw; padding: .15vw .6vw; }
 }
