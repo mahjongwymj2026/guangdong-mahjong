@@ -99,13 +99,17 @@
       </div>
     </div>
 
-    <!-- center：东南西北方向 + 鬼牌 + 剩余牌张 -->
+    <!-- 东南西北方位水印（全屏覆盖，和联机版一致） -->
+    <div class="table-dir-layer">
+      <div class="dir dir-n">北</div>
+      <div class="dir dir-s">南</div>
+      <div class="dir dir-e">东</div>
+      <div class="dir dir-w">西</div>
+    </div>
+
+    <!-- center：鬼牌 + 剩余牌张 -->
     <div class="center-area draggable" data-layout-key="centerArea">
       <div class="compass">
-        <div class="dir dir-n">北</div>
-        <div class="dir dir-s">南</div>
-        <div class="dir dir-e">东</div>
-        <div class="dir dir-w">西</div>
         <div class="compass-core">
           <div class="ghost-display" id="ghostDisplay" style="display:none;">
           <div class="ghost-frame">
