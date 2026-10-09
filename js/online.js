@@ -1071,7 +1071,12 @@
       var btnCancelHide = document.getElementById('btnCancelTakeover');
       if (btnCancelHide) btnCancelHide.style.display = 'none';
       [btnHu, btnKong, btnPeng, btnPass, btnPlay].forEach(function (b) { if (b) b.style.display = ''; });
-      if (btnHu) btnHu.disabled = !(s.myCanHu || (s.myClaim && s.myClaim.hu));
+      // 自摸胡可放弃：以"放弃时摸到的那张牌"为锚，摸牌变化（打出/杠后补牌）自动解除
+      var myLastDraw = s.players && s.players[online.mySeat] ? s.players[online.mySeat].lastDraw : null;
+      var selfDrawHu = isMyTurn && s.myCanHu && !(s.myClaim && s.myClaim.hu);
+      if (online._selfHuPassDraw != null && myLastDraw !== online._selfHuPassDraw) online._selfHuPassDraw = null;
+      var selfHuGivenUp = selfDrawHu && online._selfHuPassDraw === myLastDraw;
+      if (btnHu) btnHu.disabled = !((s.myCanHu && !selfHuGivenUp) || (s.myClaim && s.myClaim.hu));
       // 杠
       var btnKong = document.getElementById('btnKong');
       var canKong = false;
@@ -1081,9 +1086,9 @@
       // 碰
       var btnPeng = document.getElementById('btnPeng');
       if (btnPeng) btnPeng.disabled = !(s.myClaim && s.myClaim.peng);
-      // 过
+      // 过：claim（点炮/抢杠/碰杠）阶段发给服务器；自摸胡时用于放弃本次自摸
       var btnPass = document.getElementById('btnPass');
-      var canPass = !!s.myClaim;
+      var canPass = !!s.myClaim || (selfDrawHu && !selfHuGivenUp);
       if (btnPass) btnPass.disabled = !canPass;
       // 打出
       var btnPlay = document.getElementById('btnPlay');
@@ -1101,8 +1106,10 @@
           if (s.myClaim.robKong) bits.push('可抢杠胡');
           if (s.myClaim.hu) bits.push('可胡');
           msg = bits.length ? bits.join(' · ') + '（碰/杠/胡/过 选一个）' : '';
+        } else if (selfHuGivenUp) {
+          msg = '已放弃自摸，请选一张牌打出';
         } else if (isMyTurn && s.myCanHu) {
-          msg = '★ 你可自摸胡！';
+          msg = '★ 你可自摸胡（胡/过 选一个）';
         } else if (isMyTurn && s.myKongOptions && s.myKongOptions.length) {
           msg = '★ 你可自杠（点杠按钮）';
         }
@@ -1528,6 +1535,16 @@
     },
 
     onPass: function () {
+      var s = online.cur;
+      var myLastDraw = s && s.players && s.players[online.mySeat] ? s.players[online.mySeat].lastDraw : null;
+      // 自己回合自摸胡时点"过"：仅本地放弃本次自摸（锚定这张摸牌），不发服务器，随后正常选牌打出
+      if (s && s.phase === 'discard' && s.turn === online.mySeat && s.myCanHu
+          && !(s.myClaim && s.myClaim.hu) && myLastDraw != null
+          && online._selfHuPassDraw !== myLastDraw) {
+        online._selfHuPassDraw = myLastDraw;
+        render.actionBar();
+        return;
+      }
       net.send('pass', {});
     },
     onAddBot: function () {
