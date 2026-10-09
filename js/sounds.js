@@ -176,3 +176,32 @@ if (typeof document !== 'undefined') {
     setTimeout(preloadAll, 500);
   }
 }
+
+// ===== 音频解锁：微信/手机浏览器要求 audio.play() 必须在用户手势内调用过一次 =====
+var _unlocked = false;
+function unlock() {
+  if (_unlocked) return;
+  _unlocked = true;
+  try {
+    var a = new Audio();
+    a.muted = true;
+    a.play().then(function () { a.pause(); }).catch(function () {});
+  } catch (e) {}
+  try {
+    var ctx = getCtx();
+    if (ctx && ctx.state === 'suspended') ctx.resume();
+  } catch (e) {}
+}
+window.snd = window.snd || {};
+window.snd.unlock = unlock;
+if (typeof document !== 'undefined') {
+  function _onFirstInteraction() {
+    unlock();
+    document.removeEventListener('click', _onFirstInteraction);
+    document.removeEventListener('touchstart', _onFirstInteraction);
+    document.removeEventListener('touchend', _onFirstInteraction);
+  }
+  document.addEventListener('click', _onFirstInteraction);
+  document.addEventListener('touchstart', _onFirstInteraction);
+  document.addEventListener('touchend', _onFirstInteraction);
+}
