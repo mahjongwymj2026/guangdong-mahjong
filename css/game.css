@@ -1331,8 +1331,9 @@
     display: flex !important;
     flex-direction: column-reverse !important;
     flex-wrap: wrap-reverse !important;
-    align-items: flex-end !important;
+    align-items: center !important;
     align-self: flex-end !important;
+    width: 8vw !important;
     height: 24vw !important;
     margin-right: 0 !important;
     max-height: none !important;
@@ -1340,7 +1341,7 @@
   }
   .seat-right #rightPond img {
     height: 4vw !important;
-    width: auto !important;
+    width: 4vw !important;
     object-fit: contain !important;
     display: block !important;
     transform: rotate(270deg) !important;
