@@ -1167,6 +1167,44 @@
 .right-melds .warn3-tag { top: -2.8vh; left: 0; }
 
 /* ============================================================
+   固定布局定位（替代联机版 online.css 基础定位）
+   ============================================================ */
+/* 左家座位（game.css 只有 position:absolute，无坐标） */
+.seat-left { bottom: 8vh; left: 2vh; }
+
+/* 底部区域绝对定位（否则正常流从顶部开始，与座位重叠） */
+.my-pond-wrapper {
+  position: absolute;
+  bottom: 12vh;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.my-melds-wrapper {
+  position: absolute;
+  bottom: 1vh;
+  left: 2vh;
+}
+.my-hand-wrapper {
+  position: absolute;
+  bottom: 1vh;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tip-line {
+  position: absolute;
+  bottom: 20vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+.action-bar {
+  position: absolute;
+  bottom: 24vh;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ============================================================
    横屏布局（复用联机版 online.css 的位置/大小参数）
    排除 .mj-own / .my-hand-wrapper（手牌区不动）
    ============================================================ */
