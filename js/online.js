@@ -1688,6 +1688,7 @@
       var self = this;
       this._startTime = Date.now();
       this._chunks = [];
+      if (window.snd) window.snd.setMute(true);  // 录音时静音游戏音效
       navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
         if (!self._requested) { // 期间已被释放
           stream.getTracks().forEach(function (t) { t.stop(); });
@@ -1755,6 +1756,7 @@
       this._chunks = [];
       this._recording = false;
       this._pendingRelease = false;
+      if (window.snd) window.snd.setMute(false);  // 录音结束，恢复游戏音效
       this._requested = false;
       if (this._timer) { clearTimeout(this._timer); this._timer = null; }
     },
@@ -1790,12 +1792,14 @@
         var audio = new Audio(url);
         var btn = this._getBtn(rel);
         if (btn) btn.classList.add('playing');
+        if (window.snd) window.snd.setMute(true);  // 播放语音时静音游戏音效
         audio.onended = function () {
           if (btn) btn.classList.remove('playing');
           URL.revokeObjectURL(url);
+          if (window.snd) window.snd.setMute(false);  // 恢复游戏音效
         };
-        audio.play().catch(function () {});
-      } catch (e) {}
+        audio.play().catch(function () { if (window.snd) window.snd.setMute(false); });
+      } catch (e) { if (window.snd) window.snd.setMute(false); }
     },
 
     _base64ToBytes: function (base64) {
@@ -1826,8 +1830,9 @@
           var blob = new Blob([bytes], { type: 'audio/webm' });
           var url = URL.createObjectURL(blob);
           var audio = new Audio(url);
-          audio.onended = function () { voiceEl.classList.remove('replaying'); URL.revokeObjectURL(url); };
-          audio.play().catch(function () { voiceEl.classList.remove('replaying'); });
+          if (window.snd) window.snd.setMute(true);  // 回听语音时静音游戏音效
+          audio.onended = function () { voiceEl.classList.remove('replaying'); URL.revokeObjectURL(url); if (window.snd) window.snd.setMute(false); };
+          audio.play().catch(function () { voiceEl.classList.remove('replaying'); if (window.snd) window.snd.setMute(false); });
         });
       }
       msg.appendChild(dir);

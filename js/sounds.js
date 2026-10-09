@@ -1,5 +1,10 @@
 // js/sounds.js — 音效系统（浏览器版本，适配 Web Audio API）
 
+// 静音控制：语音录制/播放时静音所有游戏音效
+var _muted = false;
+function setMute(on) { _muted = !!on; }
+function getMute() { return _muted; }
+
 // WebAudio 上下文
 var audioCtx = null;
 function getCtx() {
@@ -15,6 +20,7 @@ function getCtx() {
 
 // 简单音调
 function tone(freq, duration, type, vol) {
+  if (_muted) return;  // 语音录制/播放时静音
   var ctx = getCtx();
   if (!ctx) return;
   try {
@@ -74,6 +80,7 @@ function preloadAll() {
 
 // 语音播放（缓存复用，秒播；支持快速连续播放同一语音）
 function playVoice(name) {
+  if (_muted) return;  // 语音录制/播放时静音
   try {
     var audio = getVoice(name);
     // 如果上一个同名语音还在播，克隆一个播，避免被 currentTime=0 掐断
@@ -154,6 +161,8 @@ function lightning() {
 window.snd = {
   tone: tone,
   playVoice: playVoice,
+  setMute: setMute,
+  getMute: getMute,
   tileCodeToFileName: tileCodeToFileName,
   tile: tile,
   peng: peng,
