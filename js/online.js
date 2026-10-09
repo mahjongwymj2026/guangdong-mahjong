@@ -428,6 +428,11 @@
               ui.updateNextRoundReady(m.detail.ready);
               break;
             }
+            // round_end 只渲染不进声音队列，避免覆盖 hu 事件的 _pendingSfx 导致胡牌无声
+            if (m.evt === 'round_end') {
+              setTimeout(function () { render.all(); }, 1000);
+              break;
+            }
             // 动作事件统一延迟1秒：画面+声音同时出现，给语音预加载留时间，节奏均匀
             var evtName = m.evt, evtDetail = m.detail;
             setTimeout(function () {
@@ -657,15 +662,15 @@
             if (window.snd.gang) setTimeout(function () { window.snd.gang(); }, 350);
             break;
           case 'hu':
-            // 胡牌人声：普通胡喊"自摸"，特殊胡牌喊牌型名（对对糊/清一色/清对/幺九/十三幺）
+            // 胡牌人声：特殊牌型优先喊牌型名（对对糊/清一色/清对/幺九/十三幺），
+            // 普通自摸才喊"自摸"，其他（如抢杠胡无牌型数据）奏胡牌音效
             var ed = detail.endData || (online.cur && online.cur.endData) || null;
             var fanName = ed ? ed.name : null;
             var fanVoiceName = fanName && window.snd.FAN_VOICES ? window.snd.FAN_VOICES[fanName] : null;
-            // 自己胡牌且是自摸时，ed 可能还没准备好，但 detail.isSelfDraw 是可靠的
-            if (detail.isSelfDraw) {
-              if (window.snd.playVoice) window.snd.playVoice('zimo');
-            } else if (fanVoiceName) {
+            if (fanVoiceName) {
               if (window.snd.playVoice) window.snd.playVoice(fanVoiceName);
+            } else if (detail.isSelfDraw) {
+              if (window.snd.playVoice) window.snd.playVoice('zimo');
             } else if (window.snd.hu) {
               window.snd.hu();
             }
