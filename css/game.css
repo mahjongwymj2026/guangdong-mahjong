@@ -1328,26 +1328,30 @@
   }
   .seat-right .right-back-col .mj-back:last-child { margin-bottom: 0 !important; }
   .seat-right .pond-right {
-    display: grid !important;
-    grid-template-rows: repeat(8, 3vw) !important;
-    grid-template-columns: 4vw 4vw !important;
-    grid-auto-flow: column !important;
-    direction: rtl !important;
-    gap: 0 !important;
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    align-items: flex-end !important;
+    gap: 0.03vw !important;
     align-self: flex-end !important;
-    margin-right: 0 !important;
+    margin-right: 0.02vw !important;
     max-height: none !important;
   }
-  .seat-right #rightPond img {
+  .seat-right .pond-col {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    align-items: center !important;
+    width: 4vw !important;
+    gap: 0 !important;
+  }
+  .seat-right .pond-col img {
     height: 4vw !important;
     width: auto !important;
     object-fit: contain !important;
     display: block !important;
     transform: rotate(270deg) !important;
-    margin: 0 !important;
-    justify-self: center !important;
-    align-self: center !important;
+    margin: 0 0 -1vw 0 !important;
   }
+  .seat-right .pond-col img:first-child { margin-bottom: 0 !important; }
 
   /* 对家 */
   #topPond img { height: 4vw !important; }

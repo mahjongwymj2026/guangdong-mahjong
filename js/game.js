@@ -468,9 +468,22 @@ var game = {
     var disp = this.players[seat].disp;
     var el = document.getElementById(elId);
     var html = '';
-    for (var i = 0; i < disp.length; i++) {
-      var imgName = window.mj.tileImage(disp[i]);
-      html += '<img src="images/' + imgName + '.png" class="mj" data-tile="' + disp[i] + '" alt="">';
+    if (seat === 1) {
+      // 右家弃牌：每列8张，用 pond-col 包装实现从下往上出牌
+      var colCount = Math.ceil(disp.length / 8);
+      for (var c = 0; c < colCount; c++) {
+        html += '<div class="pond-col">';
+        for (var i = c * 8; i < Math.min((c + 1) * 8, disp.length); i++) {
+          var imgName = window.mj.tileImage(disp[i]);
+          html += '<img src="images/' + imgName + '.png" class="mj" data-tile="' + disp[i] + '" alt="">';
+        }
+        html += '</div>';
+      }
+    } else {
+      for (var i = 0; i < disp.length; i++) {
+        var imgName = window.mj.tileImage(disp[i]);
+        html += '<img src="images/' + imgName + '.png" class="mj" data-tile="' + disp[i] + '" alt="">';
+      }
     }
     el.innerHTML = html;
   },
