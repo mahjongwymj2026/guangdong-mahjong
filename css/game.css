@@ -42,7 +42,7 @@
 
 /* ---------- 麻将牌（通用图片） ---------- */
 .mj {
-  height: 4vw;
+  height: 4.6vh;
   aspect-ratio: 3 / 4; /* 牌图统一 600x800，解码前先占好宽度，杜绝加载时整排抖动 */
   display: block;
   border-radius: 0.3vh;
@@ -61,15 +61,15 @@
   -webkit-touch-callout: none;
 }
 
-/* 自己的手牌（6.5vw，和联机版一致） */
+/* 自己的手牌（11vh） */
 .mj-own {
-  height: 6.5vw;
+  height: 11vh;
 }
 
 /* AI 背面牌：深绿/青色渐变方块 */
 .mj-back {
-  height: 3vw;
-  width: 2.2vw;
+  height: 4.2vh;
+  width: 3.1vh;
   display: block;
   border-radius: 0.3vh;
   background: linear-gradient(135deg, #0b7a5c, #07543f);
@@ -348,21 +348,6 @@
    以下为补全的 UI 样式（此前文件被截断而丢失，现按合理四家麻将桌布局重新设计）
    四家牌位：对家=顶、左家=左、右家=右、自己=底，中央留牌山+指南针
    ============================================================ */
-
-/* —— 拖拽通用 —— */
-.draggable { position: absolute; }
-.draggable.dragging { z-index: 99; cursor: grabbing; opacity: 0.95; }
-.layout-selected { outline: 2px dashed #e0c160; z-index: 30 !important; }
-.resize-handle {
-  position: absolute;
-  right: -1.2vh; bottom: -1.2vh;
-  width: 2.4vh; height: 2.4vh;
-  background: linear-gradient(135deg, transparent 0 46%, #000 46%), radial-gradient(circle, #e0c160 0 38%, transparent 40%);
-  cursor: nwse-resize;
-  touch-action: none;
-  display: none;
-}
-.edit-mode .resize-handle { display: block; }
 
 /* —— 三家 AI 座位内部排版 —— */
 .seat-top { max-height: 44vh; }
@@ -777,46 +762,11 @@
   padding: 0.4vh 1vh;
   border-radius: 1vh;
   font-size: 1.8vh;
-}
-
-/* —— 编辑布局按钮 + 工具栏 —— */
-.edit-layout-btn {
   position: absolute;
-  top: 50%; right: 1vh;
-  transform: translateY(-50%);
-  width: 5vh; height: 5vh;
-  border-radius: 50%;
-  background: rgba(0,0,0,0.5);
-  color: #e0c160;
-  font-size: 3.4vh;
-  border: 1px solid rgba(255,255,255,0.2);
-  z-index: 60;
-  cursor: pointer;
+  top: 1vh;
+  left: 13vh;
+  z-index: 5;
 }
-.edit-toolbar {
-  position: absolute;
-  top: 1vh; left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 0.6vh;
-  z-index: 70;
-  background: rgba(0,0,0,0.55);
-  padding: 0.6vh 1vh;
-  border-radius: 1.2vh;
-}
-.edit-btn {
-  padding: 0.4vh 1vh;
-  border: none;
-  border-radius: 0.8vh;
-  cursor: pointer;
-  font-size: 1.8vh;
-  color: #fff;
-  background: rgba(255,255,255,0.18);
-}
-.edit-save { background: #2e7d32; }
-.edit-exit { background: #c62828; }
-.edit-zoomin { background: #1565c0; }
-.edit-zoomout { background: #00695c; }
 
 /* —— 结算弹窗 —— */
 .modal-mask {
@@ -1215,3 +1165,186 @@
 .top-melds .warn3-tag   { top: -3vh; left: 0; }
 .left-melds .warn3-tag  { top: -2.8vh; left: 0; }
 .right-melds .warn3-tag { top: -2.8vh; left: 0; }
+
+/* ============================================================
+   横屏布局（复用联机版 online.css 的位置/大小参数）
+   排除 .mj-own / .my-hand-wrapper（手牌区不动）
+   ============================================================ */
+@media (orientation: landscape) {
+  /* 自己弃牌区 */
+  #myPond img { height: 5vw; }
+  .my-pond-wrapper {
+    min-height: 4vw;
+    padding: 0.1vh 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* 自己副露区 */
+  .my-melds img { height: 4.5vw; }
+  .my-melds .meld .tiles-row { gap: 0; }
+  .my-melds .meld img + img { margin-left: -0.25vw; }
+
+  /* ===== 左家 ===== */
+  .seat-left {
+    top: 2vw !important;
+    bottom: 9vw !important;
+    transform: none !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    gap: 0.9vw !important;
+  }
+  .seat-left .seat-info { position: absolute !important; top: -1.8vw !important; left: 0 !important; z-index: 3; }
+  .seat-left .left-melds {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    z-index: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5vw !important;
+    margin: 0 !important;
+    width: 6.8vh !important;
+  }
+  .seat-left .left-melds .meld { width: 6.8vh !important; align-items: center !important; }
+  .seat-left .left-melds img { height: 6.8vh !important; }
+  .seat-left .left-melds .meld img + img { margin-top: -1.7vh !important; }
+  .seat-left .left-melds .meld .tiles-row { align-items: center !important; }
+  .seat-left .left-body { gap: 0; align-items: flex-end !important; }
+  .seat-left .pond-left {
+    display: grid !important;
+    grid-template-rows: repeat(8, 3vw) !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: 4vw !important;
+    row-gap: 0 !important;
+    column-gap: 0.1vh !important;
+    align-self: flex-end !important;
+    margin-left: 0.9vw !important;
+    max-height: none !important;
+  }
+  .seat-left #leftPond img {
+    height: 4vw !important;
+    margin: 0 !important;
+    justify-self: center !important;
+    align-self: center !important;
+  }
+
+  /* ===== 右家 ===== */
+  .seat-right {
+    top: 2vw !important;
+    bottom: 9vw !important;
+    right: 1.5vh !important;
+    transform: none !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 0 !important;
+  }
+  .seat-right .seat-info { position: absolute !important; top: -1.8vw !important; right: 0 !important; z-index: 3; }
+  .seat-right .right-body {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    justify-content: flex-end !important;
+    align-self: stretch !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    gap: 0 !important;
+  }
+  .seat-right .right-strip {
+    display: flex !important;
+    flex-direction: column !important;
+    align-self: flex-start !important;
+    justify-content: flex-start !important;
+    height: auto !important;
+    position: relative !important;
+  }
+  .game-root .seat-right .right-melds {
+    position: fixed !important;
+    right: 1.5vh !important;
+    bottom: 1.5vw !important;
+    z-index: 2 !important;
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    gap: 0.5vw !important;
+    margin: 0 !important;
+    width: 6.8vh !important;
+  }
+  .game-root .seat-right .right-melds .meld { width: 6.8vh !important; }
+  .game-root .seat-right .right-melds img { height: 6.8vh !important; }
+  .game-root .seat-right .right-melds .meld img + img { margin-top: -1.7vh !important; }
+  .game-root .seat-right .right-melds .meld .tiles-row { align-items: center !important; }
+  .seat-right .right-back-col {
+    display: flex !important;
+    flex-direction: column !important;
+    align-self: flex-start !important;
+    gap: 0 !important;
+    max-height: none !important;
+    margin-right: 0 !important;
+  }
+  .seat-right .right-back-col .mj-back {
+    height: 3vw !important;
+    margin-bottom: -0.8vw !important;
+  }
+  .seat-right .right-back-col .mj-back:last-child { margin-bottom: 0 !important; }
+  .seat-right .pond-right {
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    align-items: flex-end !important;
+    align-self: flex-end !important;
+    margin-right: calc(6.8vh + 0.03vw) !important;
+    max-height: none !important;
+    gap: 1.03vw !important;
+  }
+  .seat-right .pond-col {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    gap: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .seat-right #rightPond img { height: 4vw !important; }
+  .seat-right .pond-col img { margin: 0 0 -1vw 0 !important; }
+  .seat-right .pond-col img:first-child { margin-bottom: 0 !important; }
+
+  /* 对家 */
+  #topPond img { height: 4vw !important; }
+  .top-melds img { height: 4vw !important; }
+  .top-melds .meld { width: max-content !important; }
+  .top-melds { gap: 0.2vw !important; }
+  .top-melds .meld .tiles-row { gap: 0; }
+  .top-melds .meld img + img { margin-left: 0; }
+  .top-pond { margin: 0; }
+  .seat-top .top-main { gap: 0; }
+
+  /* 左右家手牌牌背 */
+  .seat-left .left-back-col .mj-back { height: 3vw; margin-bottom: -0.8vw; }
+  .seat-left .left-back-col .mj-back:last-child { margin-bottom: 0 !important; }
+  .seat-right .right-back-col .mj-back { height: 3vw; margin-bottom: -0.8vw; }
+
+  /* 弃牌脉冲动画 */
+  @keyframes pond-latest-pulse {
+    0%   { box-shadow: 0 0 0 2px #ffd54f, 0 0 12px rgba(255,213,79,0.8); }
+    50%  { box-shadow: 0 0 0 4px #ffd54f, 0 0 24px rgba(255,213,79,1); }
+    100% { box-shadow: 0 0 0 2px #ffd54f, 0 0 12px rgba(255,213,79,0.8); }
+  }
+  .pond-latest { animation: pond-latest-pulse 0.6s ease-in-out infinite; border-radius: 4px; }
+
+  /* 底部元素定位（手牌区不动，仅弃牌/副露/操作栏） */
+  .my-melds-wrapper { bottom: 1.5vw; left: 1.5vw; }
+  .my-pond-wrapper { bottom: 8vw; }
+  .action-bar {
+    bottom: 8vw;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    gap: 0.5vh;
+  }
+  .action-bar .btn {
+    padding: 0.3vh 1.2vw;
+    font-size: 5.5vw;
+    min-height: 8vh;
+    border-radius: 0.5vw;
+  }
+  .tip-line { bottom: 20vw; }
+  .auto-tag { font-size: 1.2vw; padding: .15vw .6vw; }
+}
