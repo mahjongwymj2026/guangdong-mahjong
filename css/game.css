@@ -1330,8 +1330,10 @@
   .seat-right .pond-right {
     display: flex !important;
     flex-direction: column-reverse !important;
+    flex-wrap: wrap-reverse !important;
     align-items: flex-end !important;
     align-self: flex-end !important;
+    height: 24vw !important;
     margin-right: 0 !important;
     max-height: none !important;
     gap: 0 !important;
@@ -1372,13 +1374,15 @@
   /* 底部元素定位 */
   .my-hand-wrapper { bottom: 0.5vw; }
   .my-melds-wrapper { bottom: 0.5vw; left: 1vw; }
-  .my-pond-wrapper { bottom: 20vw; }
+  /* 弃牌区和操作按钮重叠：按钮禁用时透明(opacity:0)，弃牌可见 */
+  .my-pond-wrapper { bottom: 10vw; z-index: 2; }
   .action-bar {
     bottom: 10vw;
     left: 50%;
     right: auto;
     transform: translateX(-50%);
     gap: 0.5vh;
+    z-index: 4;
   }
   .action-bar .btn {
     padding: 0.3vh 1.2vw;
