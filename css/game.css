@@ -42,7 +42,7 @@
 
 /* ---------- 麻将牌（通用图片） ---------- */
 .mj {
-  height: 4.6vh;
+  height: 4vw;
   aspect-ratio: 3 / 4; /* 牌图统一 600x800，解码前先占好宽度，杜绝加载时整排抖动 */
   display: block;
   border-radius: 0.3vh;
@@ -61,15 +61,15 @@
   -webkit-touch-callout: none;
 }
 
-/* 自己的手牌（11vh） */
+/* 自己的手牌（6.5vw，和联机版一致） */
 .mj-own {
-  height: 11vh;
+  height: 6.5vw;
 }
 
 /* AI 背面牌：深绿/青色渐变方块 */
 .mj-back {
-  height: 4.2vh;
-  width: 3.1vh;
+  height: 3vw;
+  width: 2.2vw;
   display: block;
   border-radius: 0.3vh;
   background: linear-gradient(135deg, #0b7a5c, #07543f);
@@ -348,6 +348,21 @@
    以下为补全的 UI 样式（此前文件被截断而丢失，现按合理四家麻将桌布局重新设计）
    四家牌位：对家=顶、左家=左、右家=右、自己=底，中央留牌山+指南针
    ============================================================ */
+
+/* —— 拖拽通用 —— */
+.draggable { position: absolute; }
+.draggable.dragging { z-index: 99; cursor: grabbing; opacity: 0.95; }
+.layout-selected { outline: 2px dashed #e0c160; z-index: 30 !important; }
+.resize-handle {
+  position: absolute;
+  right: -1.2vh; bottom: -1.2vh;
+  width: 2.4vh; height: 2.4vh;
+  background: linear-gradient(135deg, transparent 0 46%, #000 46%), radial-gradient(circle, #e0c160 0 38%, transparent 40%);
+  cursor: nwse-resize;
+  touch-action: none;
+  display: none;
+}
+.edit-mode .resize-handle { display: block; }
 
 /* —— 三家 AI 座位内部排版 —— */
 .seat-top { max-height: 44vh; }
@@ -762,11 +777,46 @@
   padding: 0.4vh 1vh;
   border-radius: 1vh;
   font-size: 1.8vh;
-  position: absolute;
-  top: 1vh;
-  left: 13vh;
-  z-index: 5;
 }
+
+/* —— 编辑布局按钮 + 工具栏 —— */
+.edit-layout-btn {
+  position: absolute;
+  top: 50%; right: 1vh;
+  transform: translateY(-50%);
+  width: 5vh; height: 5vh;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.5);
+  color: #e0c160;
+  font-size: 3.4vh;
+  border: 1px solid rgba(255,255,255,0.2);
+  z-index: 60;
+  cursor: pointer;
+}
+.edit-toolbar {
+  position: absolute;
+  top: 1vh; left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.6vh;
+  z-index: 70;
+  background: rgba(0,0,0,0.55);
+  padding: 0.6vh 1vh;
+  border-radius: 1.2vh;
+}
+.edit-btn {
+  padding: 0.4vh 1vh;
+  border: none;
+  border-radius: 0.8vh;
+  cursor: pointer;
+  font-size: 1.8vh;
+  color: #fff;
+  background: rgba(255,255,255,0.18);
+}
+.edit-save { background: #2e7d32; }
+.edit-exit { background: #c62828; }
+.edit-zoomin { background: #1565c0; }
+.edit-zoomout { background: #00695c; }
 
 /* —— 结算弹窗 —— */
 .modal-mask {
